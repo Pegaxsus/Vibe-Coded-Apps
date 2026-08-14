@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Silueta a Blueprint de Factorio</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101418;
+      --panel: #171d22;
+      --panel-2: #202830;
+      --field: #10161b;
+      --drop: #11171c;
+      --drop-hover: #151c21;
+      --canvas-bg: #0c1115;
+      --checker: #12191e;
+      --line: #33404a;
+      --text: #eef3f6;
+      --muted: #93a4ae;
+      --accent: #f0c14b;
+      --accent-2: #45b8ac;
+      --danger: #ff6b6b;
+      --ok: #84d67e;
+      --shadow: 0 18px 55px rgba(0, 0, 0, 0.28);
+    }
+
+    body[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f4f2ec;
+      --panel: #ffffff;
+      --panel-2: #edf1f2;
+      --field: #fbfcfc;
+      --drop: #f7f9f9;
+      --drop-hover: #fff9e6;
+      --canvas-bg: #f8faf9;
+      --checker: #e8eeee;
+      --line: #cbd4d8;
+      --text: #152025;
+      --muted: #5c6d75;
+      --accent: #c98d12;
+      --accent-2: #16897e;
+      --danger: #b63333;
+      --ok: #267a35;
+      --shadow: 0 18px 55px rgba(31, 43, 48, 0.13);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(var(--body-wash, rgba(16, 20, 24, 0.88)), var(--body-wash-2, rgba(16, 20, 24, 0.96))),
+        repeating-linear-gradient(90deg, transparent 0 31px, rgba(240, 193, 75, 0.08) 31px 32px),
+        repeating-linear-gradient(0deg, var(--bg) 0 31px, rgba(69, 184, 172, 0.08) 31px 32px);
+    }
+
+    body[data-theme="light"] {
+      --body-wash: rgba(244, 242, 236, 0.88);
+      --body-wash-2: rgba(244, 242, 236, 0.96);
+    }
+
+    main {
+      width: min(1220px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .top-side {
+      display: grid;
+      gap: 10px;
+      justify-items: end;
+      min-width: min(380px, 100%);
+    }
+
+    .top-tools {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: end;
+      gap: 8px;
+    }
+
+    .select-field {
+      display: grid;
+      gap: 4px;
+      min-width: 118px;
+    }
+
+    .select-field span {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    select {
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      background: var(--field);
+      font: inherit;
+      font-weight: 750;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 4vw, 3.2rem);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 10px 0 0;
+      max-width: 740px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .privacy-note {
+      color: var(--accent);
+      font-weight: 750;
+    }
+
+    .status {
+      min-width: min(330px, 100%);
+      min-height: 72px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
+      color: var(--muted);
+      box-shadow: var(--shadow);
+    }
+
+    .status strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(310px, 410px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel) 96%, transparent);
+      box-shadow: var(--shadow);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel-2) 64%, transparent);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .drop {
+      display: grid;
+      place-items: center;
+      min-height: 156px;
+      padding: 18px;
+      border: 1px dashed #5a6a74;
+      border-radius: 8px;
+      background: var(--drop);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.16s, background 0.16s, transform 0.16s;
+    }
+
+    .drop:hover,
+    .drop.dragging {
+      border-color: var(--accent);
+      background: var(--drop-hover);
+      transform: translateY(-1px);
+    }
+
+    .drop input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+    }
+
+    .drop b {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 1.02rem;
+    }
+
+    .drop span {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    label.select-field {
+      display: grid;
+      justify-content: stretch;
+      gap: 4px;
+    }
+
+    label output {
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      background: var(--field);
+      font: inherit;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      height: 40px;
+      padding: 0 11px;
+    }
+
+    textarea {
+      min-height: 168px;
+      padding: 12px;
+      resize: vertical;
+      line-height: 1.45;
+      word-break: break-all;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      height: 42px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: #111418;
+      background: var(--accent);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 800;
+      transition: filter 0.16s, transform 0.16s, opacity 0.16s;
+    }
+
+    button:hover:not(:disabled) {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+    }
+
+    button.secondary {
+      color: var(--text);
+      border-color: var(--line);
+      background: var(--panel-2);
+    }
+
+    .preview-wrap {
+      min-height: 640px;
+      padding: 16px;
+    }
+
+    .canvas-shell {
+      display: grid;
+      place-items: center;
+      min-height: 430px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(45deg, var(--checker) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--checker) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--checker) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--checker) 75%);
+      background-color: var(--canvas-bg);
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+      background-size: 20px 20px;
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      image-rendering: pixelated;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .stat b {
+      display: block;
+      margin-top: 5px;
+      overflow-wrap: anywhere;
+      font-size: 1rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.88rem;
+    }
+
+    .ok { color: var(--ok); }
+    .bad { color: var(--danger); }
+
+    .watermark {
+      position: fixed;
+      right: 16px;
+      bottom: 14px;
+      z-index: 10;
+      color: color-mix(in srgb, var(--text) 78%, transparent);
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1.25;
+      pointer-events: none;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .watermark small {
+      display: block;
+      margin-top: 1px;
+      font-size: 0.46em;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .license-line {
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      gap: 7px;
+      margin-top: 4px;
+      font-size: 0.38em;
+      font-weight: 850;
+      letter-spacing: 0;
+    }
+
+    .license-icons {
+      width: 118px;
+      height: auto;
+      display: block;
+    }
+
+    .license-icons.dark-license { display: block; }
+    .license-icons.light-license { display: none; }
+
+    body[data-theme="light"] .license-icons.dark-license { display: none; }
+    body[data-theme="light"] .license-icons.light-license { display: block; }
+
+    @media (max-width: 560px) {
+      .watermark {
+        right: 10px;
+        bottom: 8px;
+        font-size: 20px;
+      }
+
+      .license-icons {
+        width: 92px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      header,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        display: grid;
+        align-items: start;
+      }
+
+      .top-side,
+      .top-tools {
+        justify-items: stretch;
+        justify-content: stretch;
+      }
+
+      .preview-wrap {
+        min-height: auto;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      main { width: min(100% - 18px, 1220px); padding: 16px 0; }
+      .row,
+      .actions,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <main>
+    <header>
+      <div>
+        <h1 data-i18n="title">Factorio: Silhouette to blueprint</h1>
+        <p class="privacy-note" data-i18n="offlineNote">Esta aplicación funciona completamente offline, por lo que no requiere internet ni comparte ningún tipo de información externamente.</p>
+        <p data-i18n="intro">Sube un PNG con fondo blanco y silueta negra. La app detecta la forma, la simplifica a una rejilla y genera un blueprint de Factorio con tiles de plataforma espacial.</p>
+      </div>
+      <div class="top-side">
+        <div class="top-tools" data-i18n-aria-label="preferencesLabel" aria-label="Preferencias">
+          <label class="select-field" for="language-select">
+            <span data-i18n="languageLabel">Idioma</span>
+            <select id="language-select">
+              <option value="es">Español</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+          <label class="select-field" for="theme-select">
+            <span data-i18n="themeLabel">Tema</span>
+            <select id="theme-select">
+              <option value="dark" data-i18n="themeDark">Oscuro</option>
+              <option value="light" data-i18n="themeLight">Claro</option>
+            </select>
+          </label>
+        </div>
+        <div class="status" aria-live="polite">
+          <strong id="state-title">Esperando imagen</strong>
+          <span id="state-detail">Todo funciona localmente en tu navegador.</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="workspace">
+      <aside class="panel">
+        <div class="panel-header">
+          <h2 data-i18n="inputTitle">Entrada</h2>
+        </div>
+        <div class="controls">
+          <label class="drop" id="drop-zone">
+            <input id="file-input" type="file" accept="image/png,image/*">
+            <span>
+              <b data-i18n="dropTitle">Seleccionar o arrastrar PNG</b>
+              <span data-i18n="dropDetail">Fondo blanco, silueta negra. Las zonas oscuras se convierten en suelo.</span>
+            </span>
+          </label>
+
+          <div class="field">
+            <label for="threshold"><span data-i18n="thresholdLabel">Umbral negro</span> <output id="threshold-out">160</output></label>
+            <input id="threshold" type="range" min="1" max="254" value="160">
+          </div>
+
+          <div class="field">
+            <label for="scale"><span data-i18n="scaleLabel">Escala en juego</span> <output id="scale-out">100%</output></label>
+            <input id="scale" type="range" min="25" max="300" step="5" value="100">
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="max-tiles" data-i18n="maxTilesLabel">Lado max. tiles</label>
+              <input id="max-tiles" type="number" min="8" max="512" value="96">
+            </div>
+            <div class="field">
+              <label for="coverage" data-i18n="coverageLabel">Suavizado %</label>
+              <input id="coverage" type="number" min="1" max="100" value="35">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="symmetry-mode" data-i18n="symmetryLabel">Simetría vertical</label>
+            <select id="symmetry-mode">
+              <option value="auto" data-i18n="symmetryAuto">Auto</option>
+              <option value="force" data-i18n="symmetryForce">Forzar</option>
+              <option value="off" data-i18n="symmetryOff">Desactivar</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="tile-name" data-i18n="tileNameLabel">Nombre interno del tile</label>
+            <select id="tile-name">
+              <option value="space-platform-foundation" data-i18n="tileSpacePlatform">Space platform foundation</option>
+              <option value="stone-path" data-i18n="tileStoneBrick">Stone Brick</option>
+              <option value="concrete" data-i18n="tileConcrete">Concrete</option>
+              <option value="refined-concrete" data-i18n="tileRefinedConcrete">Refined concrete</option>
+            </select>
+          </div>
+
+          <div class="actions">
+            <button id="copy-btn" disabled data-i18n="copyButton">Copiar blueprint</button>
+            <button class="secondary" id="download-btn" disabled data-i18n="downloadButton">Descargar .txt</button>
+          </div>
+
+          <div class="field">
+            <label for="blueprint" data-i18n="blueprintLabel">String de blueprint</label>
+            <textarea id="blueprint" readonly data-i18n-placeholder="blueprintPlaceholder" placeholder="El blueprint aparecerá aquí tras subir una silueta."></textarea>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2 data-i18n="previewTitle">Vista previa</h2>
+        </div>
+        <div class="preview-wrap">
+          <div class="canvas-shell">
+            <canvas id="preview" width="720" height="440" data-i18n-aria-label="canvasLabel" aria-label="Vista previa de tiles"></canvas>
+          </div>
+          <div class="stats">
+            <div class="stat"><span data-i18n="imageStat">Imagen</span><b id="image-stat">-</b></div>
+            <div class="stat"><span data-i18n="gridStat">Blueprint</span><b id="grid-stat">-</b></div>
+            <div class="stat"><span data-i18n="scaleStat">Escala</span><b id="scale-stat">100%</b></div>
+            <div class="stat"><span data-i18n="tileStat">Tiles</span><b id="tile-stat">0</b></div>
+            <div class="stat"><span data-i18n="sizeStat">Tamaño string</span><b id="size-stat">0</b></div>
+          </div>
+          <p class="note" data-i18n="note">En Factorio importa el blueprint string y colócalo en una superficie donde se puedan usar tiles de plataforma espacial. Si tu versión o un mod usa otro prototipo, cambia el nombre interno del tile.</p>
+        </div>
+      </section>
+    </section>
+  </main>
+  <div class="watermark">
+    <div>u/Pegaxsus</div>
+    <small>created with CODEX</small>
+    <div class="license-line">
+      <span>License:</span>
+      <img class="license-icons dark-license" src="assets/dark-license.jpg" alt="CC BY NC SA">
+      <img class="license-icons light-license" src="assets/light-license.png" alt="CC BY NC SA">
+    </div>
+  </div>
+
+  <script>
+    const els = {
+      language: document.querySelector("#language-select"),
+      theme: document.querySelector("#theme-select"),
+      file: document.querySelector("#file-input"),
+      drop: document.querySelector("#drop-zone"),
+      threshold: document.querySelector("#threshold"),
+      thresholdOut: document.querySelector("#threshold-out"),
+      scale: document.querySelector("#scale"),
+      scaleOut: document.querySelector("#scale-out"),
+      maxTiles: document.querySelector("#max-tiles"),
+      coverage: document.querySelector("#coverage"),
+      symmetry: document.querySelector("#symmetry-mode"),
+      tileName: document.querySelector("#tile-name"),
+      blueprint: document.querySelector("#blueprint"),
+      copy: document.querySelector("#copy-btn"),
+      download: document.querySelector("#download-btn"),
+      preview: document.querySelector("#preview"),
+      stateTitle: document.querySelector("#state-title"),
+      stateDetail: document.querySelector("#state-detail"),
+      imageStat: document.querySelector("#image-stat"),
+      gridStat: document.querySelector("#grid-stat"),
+      scaleStat: document.querySelector("#scale-stat"),
+      tileStat: document.querySelector("#tile-stat"),
+      sizeStat: document.querySelector("#size-stat")
+    };
+
+    const ctx = els.preview.getContext("2d");
+    let sourceBitmap = null;
+    let sourceName = "silueta";
+    let lastBlueprint = "";
+    let currentPreview = { columns: 48, rows: 28, tiles: [] };
+    let currentLang = "es";
+    let currentState = { title: "stateIdleTitle", detail: "stateIdleDetail", vars: {}, good: true };
+
+    const translations = {
+      es: {
+        pageTitle: "Silueta a Blueprint de Factorio",
+        title: "Factorio: Silhouette to blueprint",
+        offlineNote: "Esta aplicación funciona completamente offline, por lo que no requiere internet ni comparte ningún tipo de información externamente.",
+        intro: "Sube un PNG con fondo blanco y silueta negra. La app traza la forma de la silueta, la simplifica a una rejilla y genera un blueprint de Factorio con tiles de plataforma espacial.",
+        languageLabel: "Idioma",
+        preferencesLabel: "Preferencias",
+        canvasLabel: "Vista previa de tiles",
+        themeLabel: "Tema",
+        themeDark: "Oscuro",
+        themeLight: "Claro",
+        inputTitle: "Entrada",
+        dropTitle: "Seleccionar o arrastrar PNG",
+        dropDetail: "Fondo blanco, silueta negra. Las zonas oscuras se convierten en suelo.",
+        thresholdLabel: "Umbral negro",
+        scaleLabel: "Escala en juego",
+        maxTilesLabel: "Lado max. tiles",
+        coverageLabel: "Suavizado %",
+        symmetryLabel: "Simetría vertical",
+        symmetryAuto: "Auto",
+        symmetryForce: "Forzar",
+        symmetryOff: "Desactivar",
+        tileNameLabel: "Nombre interno del tile",
+        tileSpacePlatform: "Space platform foundation",
+        tileStoneBrick: "Stone Brick",
+        tileConcrete: "Concrete",
+        tileRefinedConcrete: "Refined concrete",
+        copyButton: "Copiar blueprint",
+        downloadButton: "Descargar .txt",
+        blueprintLabel: "String de blueprint",
+        blueprintPlaceholder: "El blueprint aparecerá aquí tras subir una silueta.",
+        previewTitle: "Vista previa",
+        imageStat: "Imagen",
+        gridStat: "Blueprint",
+        scaleStat: "Escala",
+        tileStat: "Tiles",
+        sizeStat: "Tamaño string",
+        note: "En Factorio importa el blueprint string y colócalo en una superficie donde se puedan usar tiles de plataforma espacial. Si tu versión o un mod usa otro prototipo, cambia el nombre interno del tile.",
+        stateIdleTitle: "Esperando imagen",
+        stateIdleDetail: "Todo funciona localmente en tu navegador.",
+        stateProcessingTitle: "Procesando",
+        stateProcessingDetail: "Analizando la silueta y comprimiendo el blueprint...",
+        stateReadyTitle: "Blueprint listo",
+        stateReadyDetail: "Revisa los detalles bajo la vista previa.",
+        stateImageLoadedTitle: "Imagen cargada",
+        stateImageLoadedDetail: "{name}: {width} x {height}px",
+        stateCopyTitle: "Copiado",
+        stateCopyDetail: "Ya puedes importar el string dentro de Factorio.",
+        stateErrorTitle: "No se pudo generar",
+        stateInvalidPngTitle: "PNG no válido",
+        errorNoPixels: "No he encontrado píxeles oscuros. Baja el umbral o revisa el PNG.",
+        errorEmpty: "La silueta queda vacía con ese suavizado. Baja el porcentaje de suavizado.",
+        chars: "chars"
+      },
+      en: {
+        pageTitle: "Factorio Silhouette to Blueprint",
+        title: "Factorio: Silhouette to blueprint",
+        offlineNote: "This app runs completely offline, so it does not require internet access or share any information externally.",
+        intro: "Upload a PNG with a white background and a black silhouette. The app traces the silhouette shape, reduces it to a grid, and generates a Factorio blueprint with space platform foundation tiles.",
+        languageLabel: "Language",
+        preferencesLabel: "Preferences",
+        canvasLabel: "Tile preview",
+        themeLabel: "Theme",
+        themeDark: "Dark",
+        themeLight: "Light",
+        inputTitle: "Input",
+        dropTitle: "Select or drop PNG",
+        dropDetail: "White background, black silhouette. Dark areas become floor tiles.",
+        thresholdLabel: "Black threshold",
+        scaleLabel: "In-game scale",
+        maxTilesLabel: "Max side tiles",
+        coverageLabel: "Smoothing %",
+        symmetryLabel: "Vertical symmetry",
+        symmetryAuto: "Auto",
+        symmetryForce: "Force",
+        symmetryOff: "Off",
+        tileNameLabel: "Internal tile name",
+        tileSpacePlatform: "Space platform foundation",
+        tileStoneBrick: "Stone Brick",
+        tileConcrete: "Concrete",
+        tileRefinedConcrete: "Refined concrete",
+        copyButton: "Copy blueprint",
+        downloadButton: "Download .txt",
+        blueprintLabel: "Blueprint string",
+        blueprintPlaceholder: "The blueprint will appear here after you upload a silhouette.",
+        previewTitle: "Preview",
+        imageStat: "Image",
+        gridStat: "Blueprint",
+        scaleStat: "Scale",
+        tileStat: "Tiles",
+        sizeStat: "String size",
+        note: "Import the blueprint string in Factorio and place it on a surface where space platform tiles are allowed. If your version or a mod uses another prototype, change the internal tile name.",
+        stateIdleTitle: "Waiting for image",
+        stateIdleDetail: "Everything runs locally in your browser.",
+        stateProcessingTitle: "Processing",
+        stateProcessingDetail: "Analyzing the silhouette and compressing the blueprint...",
+        stateReadyTitle: "Blueprint ready",
+        stateReadyDetail: "Check the details below the preview.",
+        stateImageLoadedTitle: "Image loaded",
+        stateImageLoadedDetail: "{name}: {width} x {height}px",
+        stateCopyTitle: "Copied",
+        stateCopyDetail: "You can now import the string into Factorio.",
+        stateErrorTitle: "Could not generate",
+        stateInvalidPngTitle: "Invalid PNG",
+        errorNoPixels: "I could not find dark pixels. Lower the threshold or check the PNG.",
+        errorEmpty: "The silhouette becomes empty with that smoothing. Lower the smoothing percentage.",
+        chars: "chars"
+      }
+    };
+
+    function t(key, vars = {}) {
+      return (translations[currentLang][key] || translations.es[key] || key).replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "");
+    }
+
+    function formatNumber(value) {
+      return value.toLocaleString(currentLang === "es" ? "es-ES" : "en-US");
+    }
+
+    function setState(title, detail, good = true, vars = {}) {
+      currentState = { title, detail, vars, good };
+      els.stateTitle.textContent = t(title, vars);
+      els.stateTitle.className = good ? "ok" : "bad";
+      els.stateDetail.textContent = t(detail, vars);
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.title = t("pageTitle");
+      document.querySelectorAll("[data-i18n]").forEach((node) => {
+        node.textContent = t(node.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-placeholder]").forEach((node) => {
+        node.placeholder = t(node.dataset.i18nPlaceholder);
+      });
+      document.querySelectorAll("[data-i18n-aria-label]").forEach((node) => {
+        node.setAttribute("aria-label", t(node.dataset.i18nAriaLabel));
+      });
+      setState(currentState.title, currentState.detail, currentState.good, currentState.vars);
+      if (sourceBitmap && lastBlueprint) {
+        els.tileStat.textContent = formatNumber(Number(els.tileStat.dataset.value || 0));
+        els.sizeStat.textContent = `${formatNumber(Number(els.sizeStat.dataset.value || 0))} ${t("chars")}`;
+      }
+    }
+
+    function clampInt(value, min, max) {
+      return Math.max(min, Math.min(max, Math.round(Number(value) || min)));
+    }
+
+    function updateControlOutputs() {
+      const threshold = clampInt(els.threshold.value, 1, 254);
+      const scalePercent = clampInt(els.scale.value, 25, 300);
+      els.thresholdOut.textContent = threshold;
+      els.scaleOut.textContent = `${scalePercent}%`;
+      if (!sourceBitmap) {
+        els.scaleStat.textContent = `${scalePercent}%`;
+      }
+      return { threshold, scalePercent };
+    }
+
+    function luminance(r, g, b) {
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    function base64FromBytes(bytes) {
+      let binary = "";
+      const chunk = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunk) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+      }
+      return btoa(binary);
+    }
+
+    function adler32(bytes) {
+      let a = 1;
+      let b = 0;
+      for (const byte of bytes) {
+        a = (a + byte) % 65521;
+        b = (b + a) % 65521;
+      }
+      return ((b << 16) | a) >>> 0;
+    }
+
+    function zlibStored(bytes) {
+      const chunks = [];
+      chunks.push(0x78, 0x01);
+
+      for (let offset = 0; offset < bytes.length; offset += 65535) {
+        const length = Math.min(65535, bytes.length - offset);
+        const finalBlock = offset + length >= bytes.length ? 1 : 0;
+        chunks.push(finalBlock, length & 255, length >> 8, (~length) & 255, ((~length) >> 8) & 255);
+        for (let i = 0; i < length; i++) {
+          chunks.push(bytes[offset + i]);
+        }
+      }
+
+      const checksum = adler32(bytes);
+      chunks.push((checksum >>> 24) & 255, (checksum >>> 16) & 255, (checksum >>> 8) & 255, checksum & 255);
+      return new Uint8Array(chunks);
+    }
+
+    async function compressBlueprint(jsonText) {
+      const bytes = new TextEncoder().encode(jsonText);
+      if (!("CompressionStream" in window)) {
+        return `0${base64FromBytes(zlibStored(bytes))}`;
+      }
+      const stream = new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate"));
+      const compressed = new Uint8Array(await new Response(stream).arrayBuffer());
+      return `0${base64FromBytes(compressed)}`;
+    }
+
+    function factorioVersion(major, minor, patch, developer) {
+      return (((major * 65536 + minor) * 65536 + patch) * 65536 + developer);
+    }
+
+    function normalizeLabel(name) {
+      return name.replace(/\.[^.]+$/, "").replace(/[^\w -]+/g, " ").trim() || "Silueta";
+    }
+
+    function scanSilhouette(bitmap, threshold) {
+      const offscreen = document.createElement("canvas");
+      offscreen.width = bitmap.width;
+      offscreen.height = bitmap.height;
+      const off = offscreen.getContext("2d", { willReadFrequently: true });
+      off.drawImage(bitmap, 0, 0);
+      const { data, width, height } = off.getImageData(0, 0, offscreen.width, offscreen.height);
+      const black = new Uint8Array(width * height);
+      let minX = width;
+      let minY = height;
+      let maxX = -1;
+      let maxY = -1;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const i = (y * width + x) * 4;
+          const alpha = data[i + 3];
+          const isBlack = alpha > 12 && luminance(data[i], data[i + 1], data[i + 2]) <= threshold;
+          if (isBlack) {
+            black[y * width + x] = 1;
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+          }
+        }
+      }
+
+      if (maxX < minX || maxY < minY) {
+        return null;
+      }
+
+      return { black, width, height, minX, minY, maxX, maxY };
+    }
+
+    function isBlackAt(scan, x, y) {
+      if (x < 0 || y < 0 || x >= scan.width || y >= scan.height) return 0;
+      return scan.black[Math.floor(y) * scan.width + Math.floor(x)];
+    }
+
+    function detectVerticalSymmetry(scan) {
+      const shapeWidth = scan.maxX - scan.minX + 1;
+      const shapeHeight = scan.maxY - scan.minY + 1;
+      const step = Math.max(1, Math.floor(Math.max(shapeWidth, shapeHeight) / 180));
+      let matches = 0;
+      let checked = 0;
+
+      for (let y = scan.minY; y <= scan.maxY; y += step) {
+        for (let x = scan.minX; x <= scan.maxX; x += step) {
+          const mirroredX = scan.maxX - (x - scan.minX);
+          if (isBlackAt(scan, x, y) === isBlackAt(scan, mirroredX, y)) {
+            matches++;
+          }
+          checked++;
+        }
+      }
+
+      return checked > 0 && matches / checked >= 0.94;
+    }
+
+    function enforceVerticalSymmetry(tiles, columns, rows) {
+      const byCell = new Set(tiles.map((tile) => `${tile.col},${tile.row}`));
+      for (const tile of tiles) {
+        byCell.add(`${columns - 1 - tile.col},${tile.row}`);
+      }
+
+      return Array.from(byCell, (key) => {
+        const [col, row] = key.split(",").map(Number);
+        return {
+          col,
+          row,
+          x: col - Math.floor(columns / 2),
+          y: row - Math.floor(rows / 2)
+        };
+      });
+    }
+
+    function rasterToTiles(scan, maxTiles, smoothingPercent, symmetryMode) {
+      const shapeWidth = scan.maxX - scan.minX + 1;
+      const shapeHeight = scan.maxY - scan.minY + 1;
+      const scale = Math.max(shapeWidth, shapeHeight) / maxTiles;
+      const columns = Math.max(1, Math.ceil(shapeWidth / scale));
+      const rows = Math.max(1, Math.ceil(shapeHeight / scale));
+      const tiles = [];
+      const sampleRows = Math.max(3, Math.round(3 + (smoothingPercent / 100) * 6));
+      const requiredHits = Math.max(1, Math.ceil(sampleRows * (1 - smoothingPercent / 120)));
+
+      for (let row = 0; row < rows; row++) {
+        const colHits = new Uint8Array(columns);
+
+        for (let s = 0; s < sampleRows; s++) {
+          const rowT = (s + 0.5) / sampleRows;
+          const y = Math.min(scan.maxY, scan.minY + (row + rowT) * scale);
+          let runStart = null;
+
+          for (let sampleX = scan.minX; sampleX <= scan.maxX + 1; sampleX++) {
+            const inShape = sampleX <= scan.maxX && isBlackAt(scan, sampleX, y);
+            if (inShape && runStart === null) {
+              runStart = sampleX;
+            } else if (!inShape && runStart !== null) {
+              const runEnd = sampleX - 1;
+              const leftCol = Math.max(0, Math.floor((runStart - scan.minX) / scale));
+              const rightCol = Math.min(columns - 1, Math.ceil((runEnd - scan.minX + 1) / scale) - 1);
+              for (let col = leftCol; col <= rightCol; col++) {
+                colHits[col]++;
+              }
+              runStart = null;
+            }
+          }
+        }
+
+        for (let col = 0; col < columns; col++) {
+          if (colHits[col] >= requiredHits) {
+            tiles.push({
+              col,
+              row,
+              x: col - Math.floor(columns / 2),
+              y: row - Math.floor(rows / 2)
+            });
+          }
+        }
+      }
+
+      const shouldMirror = symmetryMode === "force" || (symmetryMode === "auto" && detectVerticalSymmetry(scan));
+      return {
+        tiles: shouldMirror ? enforceVerticalSymmetry(tiles, columns, rows) : tiles,
+        columns,
+        rows
+      };
+    }
+
+    function scaledMaxTiles(maxTiles, scalePercent) {
+      return Math.max(1, Math.round(maxTiles * (scalePercent / 100)));
+    }
+
+    function drawPreview(columns, rows, tiles) {
+      currentPreview = { columns, rows, tiles };
+      const padding = 24;
+      const maxWidth = 980;
+      const maxHeight = 680;
+      const cell = Math.max(3, Math.min(16, Math.floor(Math.min((maxWidth - padding * 2) / columns, (maxHeight - padding * 2) / rows))));
+      const width = Math.max(360, columns * cell + padding * 2);
+      const height = Math.max(260, rows * cell + padding * 2);
+      const styles = getComputedStyle(document.body);
+      els.preview.width = width;
+      els.preview.height = height;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = styles.getPropertyValue("--canvas-bg").trim();
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.strokeStyle = "rgba(147, 164, 174, 0.14)";
+      ctx.lineWidth = 1;
+      for (let x = padding; x <= padding + columns * cell; x += cell) {
+        ctx.beginPath();
+        ctx.moveTo(x + 0.5, padding);
+        ctx.lineTo(x + 0.5, padding + rows * cell);
+        ctx.stroke();
+      }
+      for (let y = padding; y <= padding + rows * cell; y += cell) {
+        ctx.beginPath();
+        ctx.moveTo(padding, y + 0.5);
+        ctx.lineTo(padding + columns * cell, y + 0.5);
+        ctx.stroke();
+      }
+
+      const offsetX = Math.floor(columns / 2);
+      const offsetY = Math.floor(rows / 2);
+      ctx.fillStyle = styles.getPropertyValue("--accent").trim();
+      for (const tile of tiles) {
+        const px = padding + (tile.x + offsetX) * cell;
+        const py = padding + (tile.y + offsetY) * cell;
+        ctx.fillRect(px, py, Math.max(1, cell - 1), Math.max(1, cell - 1));
+      }
+
+      ctx.strokeStyle = styles.getPropertyValue("--accent-2").trim();
+      ctx.lineWidth = 2;
+      ctx.strokeRect(padding + 0.5, padding + 0.5, columns * cell, rows * cell);
+    }
+
+    async function generate() {
+      const controlValues = updateControlOutputs();
+      if (!sourceBitmap) return;
+
+      try {
+        const { threshold, scalePercent } = controlValues;
+        const maxTiles = clampInt(els.maxTiles.value, 8, 512);
+        const smoothing = clampInt(els.coverage.value, 1, 100);
+        const symmetryMode = els.symmetry.value;
+        const tileName = els.tileName.value.trim() || "space-platform-foundation";
+
+        setState("stateProcessingTitle", "stateProcessingDetail");
+
+        const scan = scanSilhouette(sourceBitmap, threshold);
+        if (!scan) {
+          throw new Error(t("errorNoPixels"));
+        }
+
+        const finalMaxTiles = scaledMaxTiles(maxTiles, scalePercent);
+        const result = rasterToTiles(scan, finalMaxTiles, smoothing, symmetryMode);
+        if (result.tiles.length === 0) {
+          throw new Error(t("errorEmpty"));
+        }
+
+        const factorioTiles = result.tiles.map((tile) => ({
+          name: tileName,
+          position: { x: tile.x, y: tile.y }
+        }));
+        const blueprint = {
+          blueprint: {
+            item: "blueprint",
+            label: `Silueta - ${normalizeLabel(sourceName)}`,
+            version: factorioVersion(2, 0, 0, 0),
+            tiles: factorioTiles
+          }
+        };
+
+        lastBlueprint = await compressBlueprint(JSON.stringify(blueprint));
+        els.blueprint.value = lastBlueprint;
+        els.copy.disabled = false;
+        els.download.disabled = false;
+        els.imageStat.textContent = `${sourceBitmap.width} x ${sourceBitmap.height}px`;
+        els.gridStat.textContent = `${result.columns} x ${result.rows}`;
+        els.scaleStat.textContent = `${scalePercent}%`;
+        els.tileStat.dataset.value = result.tiles.length;
+        els.sizeStat.dataset.value = lastBlueprint.length;
+        els.tileStat.textContent = formatNumber(result.tiles.length);
+        els.sizeStat.textContent = `${formatNumber(lastBlueprint.length)} ${t("chars")}`;
+        drawPreview(result.columns, result.rows, result.tiles);
+        setState("stateReadyTitle", "stateReadyDetail");
+      } catch (error) {
+        lastBlueprint = "";
+        els.blueprint.value = "";
+        els.copy.disabled = true;
+        els.download.disabled = true;
+        currentState = {
+          title: "stateErrorTitle",
+          detail: error.message,
+          vars: {},
+          good: false
+        };
+        els.stateTitle.textContent = t("stateErrorTitle");
+        els.stateTitle.className = "bad";
+        els.stateDetail.textContent = error.message;
+      }
+    }
+
+    async function loadFile(file) {
+      if (!file) return;
+      sourceName = file.name || "silueta";
+      const url = URL.createObjectURL(file);
+      try {
+        sourceBitmap = await createImageBitmap(file);
+        setState("stateImageLoadedTitle", "stateImageLoadedDetail", true, {
+          name: sourceName,
+          width: sourceBitmap.width,
+          height: sourceBitmap.height
+        });
+        await generate();
+      } catch (error) {
+        currentState = {
+          title: "stateInvalidPngTitle",
+          detail: error.message,
+          vars: {},
+          good: false
+        };
+        els.stateTitle.textContent = t("stateInvalidPngTitle");
+        els.stateTitle.className = "bad";
+        els.stateDetail.textContent = error.message;
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    els.file.addEventListener("change", () => loadFile(els.file.files[0]));
+    els.threshold.addEventListener("input", generate);
+    els.scale.addEventListener("input", generate);
+    els.maxTiles.addEventListener("input", generate);
+    els.coverage.addEventListener("input", generate);
+    els.symmetry.addEventListener("change", generate);
+    els.tileName.addEventListener("change", generate);
+    els.language.addEventListener("change", () => {
+      currentLang = els.language.value;
+      applyLanguage();
+      if (sourceBitmap) generate();
+    });
+    els.theme.addEventListener("change", () => {
+      document.body.dataset.theme = els.theme.value;
+      drawPreview(currentPreview.columns, currentPreview.rows, currentPreview.tiles);
+    });
+
+    ["dragenter", "dragover"].forEach((eventName) => {
+      els.drop.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        els.drop.classList.add("dragging");
+      });
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      els.drop.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        els.drop.classList.remove("dragging");
+      });
+    });
+
+    els.drop.addEventListener("drop", (event) => {
+      loadFile(event.dataTransfer.files[0]);
+    });
+
+    els.copy.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(lastBlueprint);
+      setState("stateCopyTitle", "stateCopyDetail");
+    });
+
+    els.download.addEventListener("click", () => {
+      const blob = new Blob([lastBlueprint], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${normalizeLabel(sourceName).replace(/\s+/g, "-").toLowerCase()}-blueprint.txt`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+
+    applyLanguage();
+    drawPreview(48, 28, []);
+  </script>
+</body>
+</html>

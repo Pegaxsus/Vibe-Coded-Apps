@@ -1,566 +1,89 @@
-<!DOCTYPE html>
-<html lang="es">
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Silueta a Blueprint de Factorio</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #101418;
-      --panel: #171d22;
-      --panel-2: #202830;
-      --field: #10161b;
-      --drop: #11171c;
-      --drop-hover: #151c21;
-      --canvas-bg: #0c1115;
-      --checker: #12191e;
-      --line: #33404a;
-      --text: #eef3f6;
-      --muted: #93a4ae;
-      --accent: #f0c14b;
-      --accent-2: #45b8ac;
-      --danger: #ff6b6b;
-      --ok: #84d67e;
-      --shadow: 0 18px 55px rgba(0, 0, 0, 0.28);
-    }
-
-    body[data-theme="light"] {
-      color-scheme: light;
-      --bg: #f4f2ec;
-      --panel: #ffffff;
-      --panel-2: #edf1f2;
-      --field: #fbfcfc;
-      --drop: #f7f9f9;
-      --drop-hover: #fff9e6;
-      --canvas-bg: #f8faf9;
-      --checker: #e8eeee;
-      --line: #cbd4d8;
-      --text: #152025;
-      --muted: #5c6d75;
-      --accent: #c98d12;
-      --accent-2: #16897e;
-      --danger: #b63333;
-      --ok: #267a35;
-      --shadow: 0 18px 55px rgba(31, 43, 48, 0.13);
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background:
-        linear-gradient(var(--body-wash, rgba(16, 20, 24, 0.88)), var(--body-wash-2, rgba(16, 20, 24, 0.96))),
-        repeating-linear-gradient(90deg, transparent 0 31px, rgba(240, 193, 75, 0.08) 31px 32px),
-        repeating-linear-gradient(0deg, var(--bg) 0 31px, rgba(69, 184, 172, 0.08) 31px 32px);
-    }
-
-    body[data-theme="light"] {
-      --body-wash: rgba(244, 242, 236, 0.88);
-      --body-wash-2: rgba(244, 242, 236, 0.96);
-    }
-
-    main {
-      width: min(1220px, calc(100% - 28px));
-      margin: 0 auto;
-      padding: 28px 0;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: start;
-      margin-bottom: 18px;
-    }
-
-    .top-side {
-      display: grid;
-      gap: 10px;
-      justify-items: end;
-      min-width: min(380px, 100%);
-    }
-
-    .top-tools {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: end;
-      gap: 8px;
-    }
-
-    .select-field {
-      display: grid;
-      gap: 4px;
-      min-width: 118px;
-    }
-
-    .select-field span {
-      color: var(--muted);
-      font-size: 0.72rem;
-      font-weight: 800;
-      text-transform: uppercase;
-    }
-
-    select {
-      height: 36px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      color: var(--text);
-      background: var(--field);
-      font: inherit;
-      font-weight: 750;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(1.7rem, 4vw, 3.2rem);
-      line-height: 0.98;
-      letter-spacing: 0;
-    }
-
-    header p {
-      margin: 10px 0 0;
-      max-width: 740px;
-      color: var(--muted);
-      line-height: 1.55;
-    }
-
-    .privacy-note {
-      color: var(--accent);
-      font-weight: 750;
-    }
-
-    .status {
-      min-width: min(330px, 100%);
-      min-height: 72px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--panel) 92%, transparent);
-      color: var(--muted);
-      box-shadow: var(--shadow);
-    }
-
-    .status strong {
-      display: block;
-      margin-bottom: 3px;
-      color: var(--text);
-      font-size: 0.92rem;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(310px, 410px) minmax(0, 1fr);
-      gap: 16px;
-      align-items: start;
-    }
-
-    .panel {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--panel) 96%, transparent);
-      box-shadow: var(--shadow);
-    }
-
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: center;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      background: color-mix(in srgb, var(--panel-2) 64%, transparent);
-    }
-
-    h2 {
-      margin: 0;
-      font-size: 1rem;
-      letter-spacing: 0;
-    }
-
-    .controls {
-      display: grid;
-      gap: 14px;
-      padding: 16px;
-    }
-
-    .drop {
-      display: grid;
-      place-items: center;
-      min-height: 156px;
-      padding: 18px;
-      border: 1px dashed #5a6a74;
-      border-radius: 8px;
-      background: var(--drop);
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.16s, background 0.16s, transform 0.16s;
-    }
-
-    .drop:hover,
-    .drop.dragging {
-      border-color: var(--accent);
-      background: var(--drop-hover);
-      transform: translateY(-1px);
-    }
-
-    .drop input {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip: rect(0 0 0 0);
-    }
-
-    .drop b {
-      display: block;
-      margin-bottom: 7px;
-      font-size: 1.02rem;
-    }
-
-    .drop span {
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .field {
-      display: grid;
-      gap: 7px;
-    }
-
-    label {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      color: var(--text);
-      font-size: 0.9rem;
-      font-weight: 700;
-    }
-
-    label.select-field {
-      display: grid;
-      justify-content: stretch;
-      gap: 4px;
-    }
-
-    label output {
-      color: var(--accent);
-      font-variant-numeric: tabular-nums;
-    }
-
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--accent);
-    }
-
-    input[type="text"],
-    input[type="number"],
-    textarea {
-      width: 100%;
-      min-width: 0;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      color: var(--text);
-      background: var(--field);
-      font: inherit;
-    }
-
-    input[type="text"],
-    input[type="number"] {
-      height: 40px;
-      padding: 0 11px;
-    }
-
-    textarea {
-      min-height: 168px;
-      padding: 12px;
-      resize: vertical;
-      line-height: 1.45;
-      word-break: break-all;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    button {
-      height: 42px;
-      border: 1px solid transparent;
-      border-radius: 8px;
-      color: #111418;
-      background: var(--accent);
-      cursor: pointer;
-      font: inherit;
-      font-weight: 800;
-      transition: filter 0.16s, transform 0.16s, opacity 0.16s;
-    }
-
-    button:hover:not(:disabled) {
-      filter: brightness(1.05);
-      transform: translateY(-1px);
-    }
-
-    button:disabled {
-      cursor: not-allowed;
-      opacity: 0.48;
-    }
-
-    button.secondary {
-      color: var(--text);
-      border-color: var(--line);
-      background: var(--panel-2);
-    }
-
-    .preview-wrap {
-      min-height: 640px;
-      padding: 16px;
-    }
-
-    .canvas-shell {
-      display: grid;
-      place-items: center;
-      min-height: 430px;
-      overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background:
-        linear-gradient(45deg, var(--checker) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--checker) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, var(--checker) 75%),
-        linear-gradient(-45deg, transparent 75%, var(--checker) 75%);
-      background-color: var(--canvas-bg);
-      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
-      background-size: 20px 20px;
-    }
-
-    canvas {
-      display: block;
-      max-width: 100%;
-      image-rendering: pixelated;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .stat {
-      min-width: 0;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel-2);
-    }
-
-    .stat span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.76rem;
-    }
-
-    .stat b {
-      display: block;
-      margin-top: 5px;
-      overflow-wrap: anywhere;
-      font-size: 1rem;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .note {
-      margin: 12px 0 0;
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 0.88rem;
-    }
-
-    .ok { color: var(--ok); }
-    .bad { color: var(--danger); }
-
-    .watermark {
-      position: fixed;
-      right: 16px;
-      bottom: 14px;
-      z-index: 10;
-      color: color-mix(in srgb, var(--text) 78%, transparent);
-      font-size: 26px;
-      font-weight: 900;
-      letter-spacing: 0;
-      line-height: 1.25;
-      pointer-events: none;
-      text-align: right;
-      text-transform: uppercase;
-    }
-
-    .watermark small {
-      display: block;
-      margin-top: 1px;
-      font-size: 0.46em;
-      font-weight: 800;
-      letter-spacing: 0;
-    }
-
-    .license-line {
-      display: flex;
-      justify-content: end;
-      align-items: center;
-      gap: 7px;
-      margin-top: 4px;
-      font-size: 0.38em;
-      font-weight: 850;
-      letter-spacing: 0;
-    }
-
-    .license-icons {
-      width: 118px;
-      height: auto;
-      display: block;
-    }
-
-    .license-icons.dark-license { display: block; }
-    .license-icons.light-license { display: none; }
-
-    body[data-theme="light"] .license-icons.dark-license { display: none; }
-    body[data-theme="light"] .license-icons.light-license { display: block; }
-
-    @media (max-width: 560px) {
-      .watermark {
-        right: 10px;
-        bottom: 8px;
-        font-size: 20px;
-      }
-
-      .license-icons {
-        width: 92px;
-      }
-    }
-
-    @media (max-width: 900px) {
-      header,
-      .workspace {
-        grid-template-columns: 1fr;
-      }
-
-      header {
-        display: grid;
-        align-items: start;
-      }
-
-      .top-side,
-      .top-tools {
-        justify-items: stretch;
-        justify-content: stretch;
-      }
-
-      .preview-wrap {
-        min-height: auto;
-      }
-
-      .stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 560px) {
-      main { width: min(100% - 18px, 1220px); padding: 16px 0; }
-      .row,
-      .actions,
-      .stats {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+  <title>Factorio Silhouette to Blueprint</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body data-theme="dark">
+  <!-- Main application shell with title, offline notice, and preferences. -->
   <main>
     <header>
       <div>
         <h1 data-i18n="title">Factorio: Silhouette to blueprint</h1>
-        <p class="privacy-note" data-i18n="offlineNote">Esta aplicación funciona completamente offline, por lo que no requiere internet ni comparte ningún tipo de información externamente.</p>
-        <p data-i18n="intro">Sube un PNG con fondo blanco y silueta negra. La app detecta la forma, la simplifica a una rejilla y genera un blueprint de Factorio con tiles de plataforma espacial.</p>
+        <p class="privacy-note" data-i18n="offlineNote">This app runs completely offline, so it does not require internet access or share any information externally.</p>
+        <p data-i18n="intro">Upload a PNG with a white background and a black silhouette. The app traces the silhouette shape, reduces it to a grid, and generates a Factorio blueprint with space platform foundation tiles.</p>
       </div>
+      <!-- Language and theme controls live in the top-right corner. -->
       <div class="top-side">
         <div class="top-tools" data-i18n-aria-label="preferencesLabel" aria-label="Preferencias">
           <label class="select-field" for="language-select">
-            <span data-i18n="languageLabel">Idioma</span>
+            <span data-i18n="languageLabel">Language</span>
             <select id="language-select">
               <option value="es">Español</option>
-              <option value="en">English</option>
+              <option value="en" selected>English</option>
             </select>
           </label>
           <label class="select-field" for="theme-select">
-            <span data-i18n="themeLabel">Tema</span>
+            <span data-i18n="themeLabel">Theme</span>
             <select id="theme-select">
-              <option value="dark" data-i18n="themeDark">Oscuro</option>
-              <option value="light" data-i18n="themeLight">Claro</option>
+              <option value="dark" data-i18n="themeDark">Dark</option>
+              <option value="light" data-i18n="themeLight">Light</option>
             </select>
           </label>
-        </div>
-        <div class="status" aria-live="polite">
-          <strong id="state-title">Esperando imagen</strong>
-          <span id="state-detail">Todo funciona localmente en tu navegador.</span>
         </div>
       </div>
     </header>
 
+    <!-- Two-column workspace: controls on the left, live tile preview and stats on the right. -->
     <section class="workspace">
       <aside class="panel">
         <div class="panel-header">
-          <h2 data-i18n="inputTitle">Entrada</h2>
+          <h2 data-i18n="inputTitle">Input</h2>
         </div>
         <div class="controls">
+          <!-- PNG upload target; all image processing happens locally in the browser. -->
           <label class="drop" id="drop-zone">
             <input id="file-input" type="file" accept="image/png,image/*">
             <span>
-              <b data-i18n="dropTitle">Seleccionar o arrastrar PNG</b>
-              <span data-i18n="dropDetail">Fondo blanco, silueta negra. Las zonas oscuras se convierten en suelo.</span>
+              <b data-i18n="dropTitle">Select or drop PNG</b>
+              <span data-i18n="dropDetail">White background, black silhouette. Dark areas become floor tiles.</span>
             </span>
           </label>
 
           <div class="field">
-            <label for="threshold"><span data-i18n="thresholdLabel">Umbral negro</span> <output id="threshold-out">160</output></label>
+            <label for="threshold"><span data-i18n="thresholdLabel">Black threshold</span> <output id="threshold-out">160</output></label>
             <input id="threshold" type="range" min="1" max="254" value="160">
           </div>
 
           <div class="field">
-            <label for="scale"><span data-i18n="scaleLabel">Escala en juego</span> <output id="scale-out">100%</output></label>
+            <label for="scale"><span data-i18n="scaleLabel">In-game scale</span> <output id="scale-out">100%</output></label>
             <input id="scale" type="range" min="25" max="300" step="5" value="100">
           </div>
 
           <div class="row">
             <div class="field">
-              <label for="max-tiles" data-i18n="maxTilesLabel">Lado max. tiles</label>
+              <label for="max-tiles" data-i18n="maxTilesLabel">Max side tiles</label>
               <input id="max-tiles" type="number" min="8" max="512" value="96">
             </div>
             <div class="field">
-              <label for="coverage" data-i18n="coverageLabel">Suavizado %</label>
+              <label for="coverage" data-i18n="coverageLabel">Smoothing %</label>
               <input id="coverage" type="number" min="1" max="100" value="35">
             </div>
           </div>
 
           <div class="field">
-            <label for="symmetry-mode" data-i18n="symmetryLabel">Simetría vertical</label>
+            <label for="symmetry-mode" data-i18n="symmetryLabel">Vertical symmetry</label>
             <select id="symmetry-mode">
               <option value="auto" data-i18n="symmetryAuto">Auto</option>
-              <option value="force" data-i18n="symmetryForce">Forzar</option>
-              <option value="off" data-i18n="symmetryOff">Desactivar</option>
+              <option value="force" data-i18n="symmetryForce">Force</option>
+              <option value="off" data-i18n="symmetryOff">Off</option>
             </select>
           </div>
 
           <div class="field">
-            <label for="tile-name" data-i18n="tileNameLabel">Nombre interno del tile</label>
+            <label for="tile-name" data-i18n="tileNameLabel">Internal tile name</label>
             <select id="tile-name">
               <option value="space-platform-foundation" data-i18n="tileSpacePlatform">Space platform foundation</option>
               <option value="stone-path" data-i18n="tileStoneBrick">Stone Brick</option>
@@ -569,38 +92,48 @@
             </select>
           </div>
 
+          <!-- Blueprint actions remain disabled until a valid silhouette has been converted. -->
           <div class="actions">
-            <button id="copy-btn" disabled data-i18n="copyButton">Copiar blueprint</button>
-            <button class="secondary" id="download-btn" disabled data-i18n="downloadButton">Descargar .txt</button>
+            <button id="copy-btn" disabled data-i18n="copyButton">Copy blueprint</button>
+            <button class="secondary" id="download-btn" disabled data-i18n="downloadButton">Download .txt</button>
           </div>
 
           <div class="field">
-            <label for="blueprint" data-i18n="blueprintLabel">String de blueprint</label>
-            <textarea id="blueprint" readonly data-i18n-placeholder="blueprintPlaceholder" placeholder="El blueprint aparecerá aquí tras subir una silueta."></textarea>
+            <label for="blueprint" data-i18n="blueprintLabel">Blueprint string</label>
+            <textarea id="blueprint" readonly data-i18n-placeholder="blueprintPlaceholder" placeholder="The blueprint will appear here after you upload a silhouette."></textarea>
+          </div>
+
+          <!-- Generation status is shown below the result to avoid moving the top controls. -->
+          <div class="status" aria-live="polite">
+            <strong id="state-title">Waiting for image</strong>
+            <span id="state-detail">Everything runs locally in your browser.</span>
           </div>
         </div>
       </aside>
 
+      <!-- Canvas preview shows the final Factorio tile grid, including scale and symmetry settings. -->
       <section class="panel">
         <div class="panel-header">
-          <h2 data-i18n="previewTitle">Vista previa</h2>
+          <h2 data-i18n="previewTitle">Preview</h2>
         </div>
         <div class="preview-wrap">
           <div class="canvas-shell">
-            <canvas id="preview" width="720" height="440" data-i18n-aria-label="canvasLabel" aria-label="Vista previa de tiles"></canvas>
+            <canvas id="preview" width="720" height="440" data-i18n-aria-label="canvasLabel" aria-label="Tile preview"></canvas>
           </div>
           <div class="stats">
-            <div class="stat"><span data-i18n="imageStat">Imagen</span><b id="image-stat">-</b></div>
+            <div class="stat"><span data-i18n="imageStat">Image</span><b id="image-stat">-</b></div>
             <div class="stat"><span data-i18n="gridStat">Blueprint</span><b id="grid-stat">-</b></div>
-            <div class="stat"><span data-i18n="scaleStat">Escala</span><b id="scale-stat">100%</b></div>
+            <div class="stat"><span data-i18n="scaleStat">Scale</span><b id="scale-stat">100%</b></div>
             <div class="stat"><span data-i18n="tileStat">Tiles</span><b id="tile-stat">0</b></div>
-            <div class="stat"><span data-i18n="sizeStat">Tamaño string</span><b id="size-stat">0</b></div>
+            <div class="stat"><span data-i18n="sizeStat">String size</span><b id="size-stat">0</b></div>
           </div>
-          <p class="note" data-i18n="note">En Factorio importa el blueprint string y colócalo en una superficie donde se puedan usar tiles de plataforma espacial. Si tu versión o un mod usa otro prototipo, cambia el nombre interno del tile.</p>
+          <p class="note" data-i18n="note">Import the blueprint string in Factorio and place it on a surface where space platform tiles are allowed. If your version or a mod uses another prototype, change the internal tile name.</p>
         </div>
       </section>
     </section>
   </main>
+
+  <!-- Fixed attribution and license block; CSS swaps the license image for light/dark themes. -->
   <div class="watermark">
     <div>u/Pegaxsus</div>
     <small>created with CODEX</small>
@@ -612,6 +145,7 @@
   </div>
 
   <script>
+    // Cache all DOM nodes used by the app so the generator can update the UI quickly.
     const els = {
       language: document.querySelector("#language-select"),
       theme: document.querySelector("#theme-select"),
@@ -643,9 +177,10 @@
     let sourceName = "silueta";
     let lastBlueprint = "";
     let currentPreview = { columns: 48, rows: 28, tiles: [] };
-    let currentLang = "es";
+    let currentLang = "en";
     let currentState = { title: "stateIdleTitle", detail: "stateIdleDetail", vars: {}, good: true };
 
+    // UI text for Spanish and English; data-i18n attributes map directly to these keys.
     const translations = {
       es: {
         pageTitle: "Silueta a Blueprint de Factorio",
@@ -757,14 +292,17 @@
       }
     };
 
+    // Resolve a translated string and interpolate simple {variable} placeholders.
     function t(key, vars = {}) {
       return (translations[currentLang][key] || translations.es[key] || key).replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "");
     }
 
+    // Format numbers using the active language locale.
     function formatNumber(value) {
       return value.toLocaleString(currentLang === "es" ? "es-ES" : "en-US");
     }
 
+    // Update the status banner while preserving the translation keys for later language changes.
     function setState(title, detail, good = true, vars = {}) {
       currentState = { title, detail, vars, good };
       els.stateTitle.textContent = t(title, vars);
@@ -772,6 +310,7 @@
       els.stateDetail.textContent = t(detail, vars);
     }
 
+    // Apply the selected language to every translated text, placeholder, and aria label.
     function applyLanguage() {
       document.documentElement.lang = currentLang;
       document.title = t("pageTitle");
@@ -791,10 +330,12 @@
       }
     }
 
+    // Clamp numeric user input to the supported range.
     function clampInt(value, min, max) {
       return Math.max(min, Math.min(max, Math.round(Number(value) || min)));
     }
 
+    // Keep range output labels synchronized with their current values.
     function updateControlOutputs() {
       const threshold = clampInt(els.threshold.value, 1, 254);
       const scalePercent = clampInt(els.scale.value, 25, 300);
@@ -806,10 +347,12 @@
       return { threshold, scalePercent };
     }
 
+    // Convert an RGB pixel to perceived brightness for black/white silhouette detection.
     function luminance(r, g, b) {
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     }
 
+    // Encode binary data as base64 for Factorio's blueprint string wrapper.
     function base64FromBytes(bytes) {
       let binary = "";
       const chunk = 0x8000;
@@ -819,6 +362,7 @@
       return btoa(binary);
     }
 
+    // Compute Adler-32, required by the zlib stream fallback.
     function adler32(bytes) {
       let a = 1;
       let b = 0;
@@ -829,6 +373,7 @@
       return ((b << 16) | a) >>> 0;
     }
 
+    // Build a valid uncompressed zlib stream for browsers without CompressionStream support.
     function zlibStored(bytes) {
       const chunks = [];
       chunks.push(0x78, 0x01);
@@ -847,6 +392,7 @@
       return new Uint8Array(chunks);
     }
 
+    // Compress blueprint JSON and add Factorio's leading blueprint-string version marker.
     async function compressBlueprint(jsonText) {
       const bytes = new TextEncoder().encode(jsonText);
       if (!("CompressionStream" in window)) {
@@ -857,14 +403,17 @@
       return `0${base64FromBytes(compressed)}`;
     }
 
+    // Pack Factorio's four-part version number into the integer stored in blueprint JSON.
     function factorioVersion(major, minor, patch, developer) {
       return (((major * 65536 + minor) * 65536 + patch) * 65536 + developer);
     }
 
+    // Turn the uploaded filename into a clean blueprint label.
     function normalizeLabel(name) {
       return name.replace(/\.[^.]+$/, "").replace(/[^\w -]+/g, " ").trim() || "Silueta";
     }
 
+    // Read the uploaded image into a binary silhouette mask and find its bounding box.
     function scanSilhouette(bitmap, threshold) {
       const offscreen = document.createElement("canvas");
       offscreen.width = bitmap.width;
@@ -900,11 +449,13 @@
       return { black, width, height, minX, minY, maxX, maxY };
     }
 
+    // Sample a pixel from the binary silhouette mask, returning 0 outside the image.
     function isBlackAt(scan, x, y) {
       if (x < 0 || y < 0 || x >= scan.width || y >= scan.height) return 0;
       return scan.black[Math.floor(y) * scan.width + Math.floor(x)];
     }
 
+    // Compare left and right halves to decide whether automatic vertical symmetry should be applied.
     function detectVerticalSymmetry(scan) {
       const shapeWidth = scan.maxX - scan.minX + 1;
       const shapeHeight = scan.maxY - scan.minY + 1;
@@ -925,6 +476,7 @@
       return checked > 0 && matches / checked >= 0.94;
     }
 
+    // Mirror generated tile cells so both sides become exactly equal.
     function enforceVerticalSymmetry(tiles, columns, rows) {
       const byCell = new Set(tiles.map((tile) => `${tile.col},${tile.row}`));
       for (const tile of tiles) {
@@ -942,6 +494,7 @@
       });
     }
 
+    // Trace silhouette runs row by row and convert the resulting shape into Factorio tile cells.
     function rasterToTiles(scan, maxTiles, smoothingPercent, symmetryMode) {
       const shapeWidth = scan.maxX - scan.minX + 1;
       const shapeHeight = scan.maxY - scan.minY + 1;
@@ -996,10 +549,12 @@
       };
     }
 
+    // Convert the percentage scale slider into the target maximum tile side.
     function scaledMaxTiles(maxTiles, scalePercent) {
       return Math.max(1, Math.round(maxTiles * (scalePercent / 100)));
     }
 
+    // Draw the final tile grid preview with the same dimensions used by the blueprint.
     function drawPreview(columns, rows, tiles) {
       currentPreview = { columns, rows, tiles };
       const padding = 24;
@@ -1045,6 +600,7 @@
       ctx.strokeRect(padding + 0.5, padding + 0.5, columns * cell, rows * cell);
     }
 
+    // Generate the full Factorio blueprint string from the current image and UI settings.
     async function generate() {
       const controlValues = updateControlOutputs();
       if (!sourceBitmap) return;
@@ -1112,6 +668,7 @@
       }
     }
 
+    // Load a selected or dropped image file and trigger blueprint generation.
     async function loadFile(file) {
       if (!file) return;
       sourceName = file.name || "silueta";
@@ -1139,6 +696,7 @@
       }
     }
 
+    // Wire up all controls so changes regenerate the blueprint immediately.
     els.file.addEventListener("change", () => loadFile(els.file.files[0]));
     els.threshold.addEventListener("input", generate);
     els.scale.addEventListener("input", generate);
@@ -1156,6 +714,7 @@
       drawPreview(currentPreview.columns, currentPreview.rows, currentPreview.tiles);
     });
 
+    // Highlight the drop zone while the user drags an image over it.
     ["dragenter", "dragover"].forEach((eventName) => {
       els.drop.addEventListener(eventName, (event) => {
         event.preventDefault();
@@ -1163,6 +722,7 @@
       });
     });
 
+    // Remove the drag highlight when the pointer leaves or the file is dropped.
     ["dragleave", "drop"].forEach((eventName) => {
       els.drop.addEventListener(eventName, (event) => {
         event.preventDefault();
@@ -1170,15 +730,18 @@
       });
     });
 
+    // Generate a blueprint from files dropped directly onto the upload target.
     els.drop.addEventListener("drop", (event) => {
       loadFile(event.dataTransfer.files[0]);
     });
 
+    // Copy the generated blueprint string to the clipboard for direct import in Factorio.
     els.copy.addEventListener("click", async () => {
       await navigator.clipboard.writeText(lastBlueprint);
       setState("stateCopyTitle", "stateCopyDetail");
     });
 
+    // Save the generated blueprint string as a local text file.
     els.download.addEventListener("click", () => {
       const blob = new Blob([lastBlueprint], { type: "text/plain;charset=utf-8" });
       const link = document.createElement("a");
@@ -1188,8 +751,10 @@
       URL.revokeObjectURL(link.href);
     });
 
+    // Render an empty preview grid on first load.
     applyLanguage();
     drawPreview(48, 28, []);
   </script>
 </body>
 </html>
+

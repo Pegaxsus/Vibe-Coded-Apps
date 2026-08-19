@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QR Generator</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body data-theme="dark">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Offline QR studio</p>
+        <h1>QR Generator</h1>
+      </div>
+
+      <label class="theme-control">
+        <span>Tema</span>
+        <select id="themeSelect" aria-label="Elegir tema">
+          <option value="dark">Oscuro</option>
+          <option value="light">Claro</option>
+        </select>
+      </label>
+    </header>
+
+    <main class="workspace">
+      <section class="preview-panel" aria-label="Vista previa del codigo QR">
+        <div class="canvas-shell">
+          <canvas id="qrCanvas" width="960" height="960"></canvas>
+          <div id="emptyState" class="empty-state">
+            <strong>Escribe una URL</strong>
+            <span>El codigo QR se genera aqui, sin servicios externos.</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="control-panel" aria-label="Controles del generador">
+        <details class="control-group" open>
+          <summary>Contenido</summary>
+          <label>
+            <span>URL o texto</span>
+            <input id="urlInput" type="text" placeholder="https://mimomakers.com" autocomplete="url">
+          </label>
+          <p id="statusText" class="status-text" role="status">Introduce una URL o texto para generar el QR.</p>
+        </details>
+
+        <details class="control-group" open>
+          <summary>Codigo</summary>
+          <label>
+            <span>Correccion <output id="eccValue">Media</output></span>
+            <select id="eccLevel">
+              <option value="L">Baja</option>
+              <option value="M" selected>Media</option>
+              <option value="Q">Alta</option>
+              <option value="H">Muy alta</option>
+            </select>
+          </label>
+          <label>
+            <span>Tamano <output id="sizeValue">960 px</output></span>
+            <input id="qrSize" type="range" min="480" max="1600" step="80" value="960">
+          </label>
+          <label>
+            <span>Margen <output id="marginValue">4 modulos</output></span>
+            <input id="quietZone" type="range" min="1" max="8" value="4">
+          </label>
+        </details>
+
+        <details class="control-group" open>
+          <summary>Color</summary>
+          <div class="color-row">
+            <label>
+              <span>QR</span>
+              <input id="foregroundColor" type="color" value="#111111">
+            </label>
+            <label>
+              <span>Fondo</span>
+              <input id="backgroundColor" type="color" value="#ffffff">
+            </label>
+          </div>
+          <label class="check-row">
+            <input id="transparentBg" type="checkbox">
+            <span>Fondo transparente</span>
+          </label>
+        </details>
+
+        <section class="download-row">
+          <button id="downloadPng" type="button">Descargar PNG</button>
+          <button id="downloadSvg" type="button">Descargar SVG</button>
+          <button id="clearQr" class="danger-button" type="button">Limpiar</button>
+        </section>
+
+        <footer class="credits" aria-label="Atribucion del proyecto">
+          <span>Generador local</span>
+          <span>Sin intermediarios ni llamadas externas</span>
+        </footer>
+      </aside>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

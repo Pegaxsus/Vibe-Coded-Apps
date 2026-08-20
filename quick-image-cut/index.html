@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body data-theme="light">
+    <!-- App header mirrors the compact tool layout used by the sibling generators. -->
     <header class="app-header">
       <div>
         <p class="eyebrow">Offline image cropper</p>
@@ -23,12 +24,14 @@
     </header>
 
     <main class="workspace">
+      <!-- The preview area owns both the empty upload state and the interactive crop layer. -->
       <section class="preview-panel" aria-label="Image crop preview">
         <div id="canvasShell" class="canvas-shell">
           <div id="imageStage" class="image-stage" aria-label="Loaded image and crop frame">
             <img id="previewImage" alt="Uploaded preview">
             <div id="cropOverlay" class="crop-overlay" role="img" aria-label="Crop area">
               <span class="crop-size" id="cropSizeLabel">800 x 800 px</span>
+              <!-- Resize handles use data-resize directions consumed by app.js pointer logic. -->
               <span class="resize-handle resize-nw" data-resize="nw" aria-hidden="true"></span>
               <span class="resize-handle resize-n" data-resize="n" aria-hidden="true"></span>
               <span class="resize-handle resize-ne" data-resize="ne" aria-hidden="true"></span>
@@ -52,6 +55,7 @@
         </div>
       </section>
 
+      <!-- Controls are grouped with details elements so the panel stays scannable on small screens. -->
       <aside class="control-panel" aria-label="Crop controls">
         <details class="control-group" open>
           <summary>Image</summary>
@@ -66,7 +70,7 @@
           <summary>Crop size</summary>
           <label class="check-row">
             <input id="squareMode" type="checkbox" checked>
-            <span>Cuadrado</span>
+            <span>Square</span>
           </label>
           <label>
             <span>Width <output id="cropWidthValue">800 px</output></span>
@@ -101,6 +105,7 @@
           <button id="clearPreview" class="danger-button" type="button">Clear Preview</button>
         </section>
 
+        <!-- Attribution asset is copied from pattern-generator for brand/license consistency. -->
         <footer class="credits" aria-label="Project attribution">
           <span>U/PEGAXSUS</span>
           <span>Made with CODEX</span>

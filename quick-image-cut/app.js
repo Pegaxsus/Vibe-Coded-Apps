@@ -32,6 +32,7 @@ const outputs = {
   cropY: document.getElementById("cropYValue")
 };
 
+// Runtime state only lives for the current page session, so replacing an image can keep the crop rectangle.
 let sourceImage = null;
 let sourceUrl = "";
 let activeDownloadName = "quick-image-cut.png";
@@ -84,6 +85,7 @@ function getFitSize() {
     return { width: 0, height: 0 };
   }
 
+  // Fit the source image inside the preview shell without upscaling; this defines displayScale.
   const maxWidth = Math.max(1, canvasShell.clientWidth - 28);
   const maxHeight = Math.max(1, canvasShell.clientHeight - 28);
   const scale = Math.min(
@@ -112,6 +114,7 @@ function setCropRect(x, y, width, height) {
     return;
   }
 
+  // Inputs are the single source of truth for crop size, so mouse resizing updates them too.
   const cropWidth = clamp(Math.round(width), 1, sourceImage.naturalWidth);
   const cropHeight = clamp(Math.round(height), 1, sourceImage.naturalHeight);
 
@@ -137,6 +140,7 @@ function syncRangeLimits() {
   const maxX = sourceImage ? Math.max(0, sourceImage.naturalWidth - cropSize.width) : 0;
   const maxY = sourceImage ? Math.max(0, sourceImage.naturalHeight - cropSize.height) : 0;
 
+  // Range sliders must shrink or grow with each loaded image and current crop size.
   controls.cropX.max = String(maxX);
   controls.cropY.max = String(maxY);
   setCropPosition(controls.cropX.value, controls.cropY.value);
@@ -162,6 +166,7 @@ function updateOverlay() {
   const position = getCropPosition();
   displayScale = fitSize.width / sourceImage.naturalWidth;
 
+  // Convert natural-image crop coordinates to the scaled preview coordinate system.
   imageStage.style.width = `${fitSize.width}px`;
   imageStage.style.height = `${fitSize.height}px`;
   cropOverlay.style.width = `${Math.max(16, cropSize.width * displayScale)}px`;
@@ -216,6 +221,7 @@ function loadImage(file) {
 
   const hadImage = Boolean(sourceImage);
   sourceUrl = URL.createObjectURL(file);
+  // The exported crop keeps the original filename and the closest canvas-supported MIME type.
   activeDownloadName = file.name || "quick-image-cut.png";
   activeMimeType = ["image/png", "image/jpeg", "image/webp"].includes(file.type) ? file.type : "image/png";
 
@@ -225,6 +231,7 @@ function loadImage(file) {
     fileName.textContent = file.name;
     sideFileName.textContent = `${file.name} (${image.naturalWidth} x ${image.naturalHeight} px)`;
     const placeOverlay = () => {
+      // First image starts centered; later images keep the existing crop rectangle for batch work.
       if (hadImage) {
         setCropPosition(controls.cropX.value, controls.cropY.value);
         updateOverlay();
@@ -289,6 +296,7 @@ function cropAndDownload() {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 
+  // Draw only the selected natural-image rectangle into an output canvas of the same size.
   canvas.width = cropSize.width;
   canvas.height = cropSize.height;
   ctx.drawImage(
@@ -341,6 +349,7 @@ function handlePointerDown(event) {
 
   const position = getCropPosition();
   const cropSize = getCropSize();
+  // A data-resize target starts resize mode; any other overlay point starts move mode.
   dragState = {
     mode: event.target.dataset.resize ? "resize" : "move",
     handle: event.target.dataset.resize || "",
@@ -362,6 +371,7 @@ function handlePointerMove(event) {
   const deltaX = (event.clientX - dragState.startX) / displayScale;
   const deltaY = (event.clientY - dragState.startY) / displayScale;
 
+  // Moving preserves size and only changes the top-left crop coordinate.
   if (dragState.mode === "move") {
     setCropPosition(dragState.cropX + deltaX, dragState.cropY + deltaY);
     updateOverlay();
@@ -390,6 +400,7 @@ function handlePointerMove(event) {
   }
 
   if (controls.squareMode.checked) {
+    // Square mode lets any dragged edge define one shared side length.
     const sideSource = handle === "n" || handle === "s" ? nextHeight : nextWidth;
     const side = Math.max(1, sideSource);
     nextWidth = side;
@@ -419,6 +430,7 @@ function handlePointerMove(event) {
   }
 
   if (controls.squareMode.checked) {
+    // After clamping to image bounds, square mode resolves to the largest valid shared side.
     const side = Math.max(1, Math.min(nextWidth, nextHeight));
     nextWidth = side;
     nextHeight = side;

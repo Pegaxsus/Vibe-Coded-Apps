@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quick Image Cut</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body data-theme="light">
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Offline image cropper</p>
+        <h1>Quick Image Cut</h1>
+      </div>
+
+      <label class="theme-control">
+        <span>Theme</span>
+        <select id="themeSelect" aria-label="Choose theme">
+          <option value="dark">Dark</option>
+          <option value="light" selected>Light</option>
+        </select>
+      </label>
+    </header>
+
+    <main class="workspace">
+      <section class="preview-panel" aria-label="Image crop preview">
+        <div id="canvasShell" class="canvas-shell">
+          <div id="imageStage" class="image-stage" aria-label="Loaded image and crop frame">
+            <img id="previewImage" alt="Uploaded preview">
+            <div id="cropOverlay" class="crop-overlay" role="img" aria-label="Crop area">
+              <span class="crop-size" id="cropSizeLabel">800 x 800 px</span>
+              <span class="resize-handle resize-nw" data-resize="nw" aria-hidden="true"></span>
+              <span class="resize-handle resize-n" data-resize="n" aria-hidden="true"></span>
+              <span class="resize-handle resize-ne" data-resize="ne" aria-hidden="true"></span>
+              <span class="resize-handle resize-e" data-resize="e" aria-hidden="true"></span>
+              <span class="resize-handle resize-se" data-resize="se" aria-hidden="true"></span>
+              <span class="resize-handle resize-s" data-resize="s" aria-hidden="true"></span>
+              <span class="resize-handle resize-sw" data-resize="sw" aria-hidden="true"></span>
+              <span class="resize-handle resize-w" data-resize="w" aria-hidden="true"></span>
+            </div>
+          </div>
+
+          <div id="emptyState" class="empty-state">
+            <strong>Drop an image</strong>
+            <span>Select a crop size and move or resize the overlay over the image.</span>
+            <label class="file-picker">
+              <input id="imageInput" type="file" accept="image/*">
+              <span>Upload image</span>
+            </label>
+            <p id="fileName" class="file-name">No image selected</p>
+          </div>
+        </div>
+      </section>
+
+      <aside class="control-panel" aria-label="Crop controls">
+        <details class="control-group" open>
+          <summary>Image</summary>
+          <label class="file-picker side-picker">
+            <input id="sideImageInput" type="file" accept="image/*">
+            <span>Upload image</span>
+          </label>
+          <p id="sideFileName" class="file-name">No image selected</p>
+        </details>
+
+        <details class="control-group" open>
+          <summary>Crop size</summary>
+          <label class="check-row">
+            <input id="squareMode" type="checkbox" checked>
+            <span>Cuadrado</span>
+          </label>
+          <label>
+            <span>Width <output id="cropWidthValue">800 px</output></span>
+            <input id="cropWidth" type="number" min="1" max="20000" value="800" inputmode="numeric">
+          </label>
+          <label>
+            <span>Height <output id="cropHeightValue">800 px</output></span>
+            <input id="cropHeight" type="number" min="1" max="20000" value="800" inputmode="numeric">
+          </label>
+          <div class="preset-row" aria-label="Crop size presets">
+            <button type="button" data-preset="512,512">512</button>
+            <button type="button" data-preset="1080,1080">1080</button>
+            <button type="button" data-preset="1200,630">1200 x 630</button>
+          </div>
+        </details>
+
+        <details class="control-group" open>
+          <summary>Position</summary>
+          <label>
+            <span>X <output id="cropXValue">0 px</output></span>
+            <input id="cropX" type="range" min="0" max="0" value="0">
+          </label>
+          <label>
+            <span>Y <output id="cropYValue">0 px</output></span>
+            <input id="cropY" type="range" min="0" max="0" value="0">
+          </label>
+        </details>
+
+        <section class="download-row">
+          <button id="downloadCrop" type="button">Cut &amp; Download</button>
+          <button id="centerCrop" type="button">Center</button>
+          <button id="clearPreview" class="danger-button" type="button">Clear Preview</button>
+        </section>
+
+        <footer class="credits" aria-label="Project attribution">
+          <span>U/PEGAXSUS</span>
+          <span>Made with CODEX</span>
+          <img id="licenseImage" src="assets/license.png" alt="Project license">
+        </footer>
+      </aside>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

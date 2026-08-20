@@ -6,9 +6,9 @@ Upload a PNG with a white background and a black silhouette, tune the generation
 
 ## Features
 
-- Runs completely offline in the browser.
-- No internet connection required.
-- No uploaded image or generated blueprint is sent anywhere.
+- Blueprint generation runs locally in the browser.
+- Uploaded images and generated blueprints are not sent anywhere by the generator.
+- The GitHub link and Buy Me a Coffee button are optional external services.
 - Converts silhouette shapes into Factorio tile blueprints.
 - Live grid preview of the final in-game tile layout.
 - Adjustable black threshold, scale, smoothing, and max tile size.
@@ -58,7 +58,7 @@ The generated blueprint JSON is encoded as a Factorio blueprint string:
 3. Base64 encode the compressed bytes.
 4. Prefix the result with `0`, as expected by Factorio blueprint strings.
 
-If the browser does not support `CompressionStream`, the app falls back to a valid uncompressed zlib stream, so it still works offline.
+If the browser does not support `CompressionStream`, the app falls back to a valid uncompressed zlib stream. The generator itself can work without a backend server.
 
 ## Project Structure
 
@@ -104,4 +104,3 @@ Project by `u/Pegaxsus`.
 ## License
 
 Licensed under CC BY-NC-SA.
-

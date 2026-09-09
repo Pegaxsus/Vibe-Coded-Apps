@@ -22,6 +22,10 @@ Upload a PNG with a white background and a black silhouette, tune the generation
 - Light and dark themes.
 - Copy-to-clipboard and `.txt` download actions.
 
+## Live Demo
+
+If you want to use it now, it's available at:  [DEMO](https://mimomakers.com/labs/factorio-silhouette-blueprint/) 
+
 ## How To Use
 
 1. Open `index.html` in a modern browser.

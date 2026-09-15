@@ -502,13 +502,63 @@
 
       return Array.from(byCell, (key) => {
         const [col, row] = key.split(",").map(Number);
-        return {
-          col,
-          row,
-          x: col - Math.floor(columns / 2),
-          y: row - Math.floor(rows / 2)
-        };
+        return tileFromCell(col, row, columns, rows);
       });
+    }
+
+    // Build a tile object from grid coordinates and center it around the blueprint origin.
+    function tileFromCell(col, row, columns, rows) {
+      return {
+        col,
+        row,
+        x: col - Math.floor(columns / 2),
+        y: row - Math.floor(rows / 2)
+      };
+    }
+
+    // Fill empty grid cells that are fully enclosed by generated tiles.
+    function fillEnclosedHoles(tiles, columns, rows) {
+      const occupied = new Set(tiles.map((tile) => `${tile.col},${tile.row}`));
+      const outside = new Set();
+      const queue = [];
+
+      function visit(col, row) {
+        const key = `${col},${row}`;
+        if (col < 0 || row < 0 || col >= columns || row >= rows || occupied.has(key) || outside.has(key)) {
+          return;
+        }
+        outside.add(key);
+        queue.push({ col, row });
+      }
+
+      for (let col = 0; col < columns; col++) {
+        visit(col, 0);
+        visit(col, rows - 1);
+      }
+      for (let row = 0; row < rows; row++) {
+        visit(0, row);
+        visit(columns - 1, row);
+      }
+
+      while (queue.length > 0) {
+        const cell = queue.shift();
+        visit(cell.col + 1, cell.row);
+        visit(cell.col - 1, cell.row);
+        visit(cell.col, cell.row + 1);
+        visit(cell.col, cell.row - 1);
+      }
+
+      const filled = tiles.slice();
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < columns; col++) {
+          const key = `${col},${row}`;
+          if (!occupied.has(key) && !outside.has(key)) {
+            filled.push(tileFromCell(col, row, columns, rows));
+          }
+        }
+      }
+
+      return filled;
     }
 
     // Trace silhouette runs row by row and convert the resulting shape into Factorio tile cells.
@@ -548,19 +598,15 @@
 
         for (let col = 0; col < columns; col++) {
           if (colHits[col] >= requiredHits) {
-            tiles.push({
-              col,
-              row,
-              x: col - Math.floor(columns / 2),
-              y: row - Math.floor(rows / 2)
-            });
+            tiles.push(tileFromCell(col, row, columns, rows));
           }
         }
       }
 
       const shouldMirror = symmetryMode === "force" || (symmetryMode === "auto" && detectVerticalSymmetry(scan));
+      const shapedTiles = shouldMirror ? enforceVerticalSymmetry(tiles, columns, rows) : tiles;
       return {
-        tiles: shouldMirror ? enforceVerticalSymmetry(tiles, columns, rows) : tiles,
+        tiles: fillEnclosedHoles(shapedTiles, columns, rows),
         columns,
         rows
       };

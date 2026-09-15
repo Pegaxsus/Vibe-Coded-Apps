@@ -10,6 +10,7 @@ Upload a PNG with a white background and a black silhouette, tune the generation
 - Uploaded images and generated blueprints are not sent anywhere by the generator.
 - The GitHub link and Buy Me a Coffee button are optional external services.
 - Converts silhouette shapes into Factorio tile blueprints.
+- Automatically fills enclosed holes inside the generated platform.
 - Live grid preview of the final in-game tile layout.
 - Adjustable black threshold, scale, smoothing, and max tile size.
 - Optional vertical symmetry: Auto, Force, or Off.
@@ -21,10 +22,6 @@ Upload a PNG with a white background and a black silhouette, tune the generation
 - English and Spanish UI.
 - Light and dark themes.
 - Copy-to-clipboard and `.txt` download actions.
-
-## Live Demo
-
-If you want to use it now, it's available at:  [DEMO](https://mimomakers.com/labs/factorio-silhouette-blueprint/) 
 
 ## How To Use
 
@@ -53,7 +50,7 @@ PNG is recommended, although most browser-readable image formats should load.
 
 ## How It Works
 
-The app reads the uploaded image into an offscreen canvas and builds a binary mask from dark pixels. It then finds the silhouette bounds and traces horizontal runs of the shape row by row. Those runs are converted into a Factorio tile grid, optionally mirrored for vertical symmetry.
+The app reads the uploaded image into an offscreen canvas and builds a binary mask from dark pixels. It then finds the silhouette bounds and traces horizontal runs of the shape row by row. Those runs are converted into a Factorio tile grid, optionally mirrored for vertical symmetry. A final flood-fill pass detects empty cells that are enclosed by the platform and fills them, avoiding isolated holes inside the resulting Factorio platform.
 
 The generated blueprint JSON is encoded as a Factorio blueprint string:
 

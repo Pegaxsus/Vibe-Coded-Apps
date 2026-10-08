@@ -1,100 +1,115 @@
 <!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>QR Generator</title>
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body data-theme="dark">
-    <header class="app-header">
-      <div>
-        <p class="eyebrow">Offline QR studio</p>
-        <h1>QR Generator</h1>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR Generator</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="shell.js" defer></script>
+  <script src="tool.js" defer></script>
+</head>
+<body data-theme="light">
+  <!-- Shared template header; its structure, icons and styles stay intact. -->
+  <header class="app-header">
+    <h1 data-i18n="toolTitle">QR Generator</h1>
+    <div class="header-controls">
+      <div class="icon-group" role="group" data-i18n-aria="languageGroup" aria-label="Idioma">
+        <button class="icon-button" type="button" data-language="es" aria-label="Español" title="Español" aria-pressed="true">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="3" width="28" height="18" rx="2"/><path d="M2 8h28M2 16h28"/><path d="M10 10v4c0 2 4 2 4 0v-4zM10 12h4"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-language="en" aria-label="English" title="English" aria-pressed="false">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="3" width="28" height="18" rx="2"/><path d="m3 4 26 16M29 4 3 20M16 3v18M2 12h28"/><path d="M13 3v6H2m28 0H19V3M2 15h11v6m6 0v-6h11"/></svg>
+        </button>
       </div>
+      <span class="control-divider" aria-hidden="true"></span>
+      <div class="icon-group" role="group" data-i18n-aria="themeGroup" aria-label="Tema">
+        <button class="icon-button" type="button" data-theme-choice="light" data-i18n-aria="lightTheme" aria-label="Tema claro" title="Tema claro" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-theme-choice="dark" data-i18n-aria="darkTheme" aria-label="Tema oscuro" title="Tema oscuro" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14A8.7 8.7 0 0 1 10 3.5 8.7 8.7 0 1 0 20.5 14Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
 
-      <label class="theme-control">
-        <span>Tema</span>
-        <select id="themeSelect" aria-label="Elegir tema">
-          <option value="dark">Oscuro</option>
-          <option value="light">Claro</option>
-        </select>
-      </label>
-    </header>
+  <main class="workspace">
+    <!-- QR controls and rendering are isolated in this module. -->
+    <section id="tool-root" aria-label="QR Generator">
 
-    <main class="workspace">
-      <section class="preview-panel" aria-label="Vista previa del codigo QR">
+      <section class="preview-panel" data-i18n-aria="preview" aria-label="Vista previa del codigo QR">
         <div class="canvas-shell">
-          <canvas id="qrCanvas" width="960" height="960"></canvas>
+          <canvas role="img" data-i18n-aria="preview" aria-label="QR code preview" id="qrCanvas" width="960" height="960"></canvas>
           <div id="emptyState" class="empty-state">
-            <strong>Escribe una URL</strong>
-            <span>El codigo QR se genera aqui, sin servicios externos.</span>
+            <strong data-i18n="emptyTitle">Escribe una URL</strong>
+            <span data-i18n="emptyDescription">El codigo QR se genera aqui, sin servicios externos.</span>
           </div>
         </div>
       </section>
 
-      <aside class="control-panel" aria-label="Controles del generador">
+      <aside class="control-panel" data-i18n-aria="controls" aria-label="Controles del generador">
         <details class="control-group" open>
-          <summary>Contenido</summary>
+          <summary data-i18n="content">Contenido</summary>
           <label>
-            <span>URL o texto</span>
+            <span data-i18n="payload">URL o texto</span>
             <input id="urlInput" type="text" placeholder="https://mimomakers.com" autocomplete="url">
           </label>
-          <p id="statusText" class="status-text" role="status">Introduce una URL o texto para generar el QR.</p>
+          <p aria-live="polite" id="statusText" class="status-text" role="status">Introduce una URL o texto para generar el QR.</p>
         </details>
 
         <details class="control-group" open>
-          <summary>Codigo</summary>
+          <summary data-i18n="code">Codigo</summary>
           <label>
-            <span>Correccion <output id="eccValue">Media</output></span>
+            <span><span data-i18n="correction">Correction</span> <output id="eccValue">Media</output></span>
             <select id="eccLevel">
-              <option value="L">Baja</option>
-              <option value="M" selected>Media</option>
-              <option value="Q">Alta</option>
-              <option value="H">Muy alta</option>
+              <option value="L" data-i18n="L">Baja</option>
+              <option value="M" selected data-i18n="M">Media</option>
+              <option value="Q" data-i18n="Q">Alta</option>
+              <option value="H" data-i18n="H">Muy alta</option>
             </select>
           </label>
           <label>
-            <span>Tamano <output id="sizeValue">960 px</output></span>
+            <span><span data-i18n="size">Size</span> <output id="sizeValue">960 px</output></span>
             <input id="qrSize" type="range" min="480" max="1600" step="80" value="960">
           </label>
           <label>
-            <span>Margen <output id="marginValue">4 modulos</output></span>
+            <span><span data-i18n="margin">Margin</span> <output id="marginValue">4 modulos</output></span>
             <input id="quietZone" type="range" min="1" max="8" value="4">
           </label>
         </details>
 
         <details class="control-group" open>
-          <summary>Color</summary>
+          <summary data-i18n="color">Color</summary>
           <div class="color-row">
             <label>
-              <span>QR</span>
+              <span data-i18n="foreground">QR</span>
               <input id="foregroundColor" type="color" value="#111111">
             </label>
             <label>
-              <span>Fondo</span>
+              <span data-i18n="background">Fondo</span>
               <input id="backgroundColor" type="color" value="#ffffff">
             </label>
           </div>
           <label class="check-row">
             <input id="transparentBg" type="checkbox">
-            <span>Fondo transparente</span>
+            <span data-i18n="transparent">Fondo transparente</span>
           </label>
         </details>
 
-        <section class="download-row">
-          <button id="downloadPng" type="button">Descargar PNG</button>
-          <button id="downloadSvg" type="button">Descargar SVG</button>
-          <button id="clearQr" class="danger-button" type="button">Limpiar</button>
-        </section>
+        <div class="download-row">
+          <button id="downloadPng" type="button" data-i18n="downloadPng">Descargar PNG</button>
+          <button id="downloadSvg" type="button" data-i18n="downloadSvg">Descargar SVG</button>
+          <button id="clearQr" class="danger-button" type="button" data-i18n="clear">Limpiar</button>
+        </div>
 
-        <footer class="credits" aria-label="Atribucion del proyecto">
-          <span>Generador local</span>
-          <span>Sin intermediarios ni llamadas externas</span>
+        <footer class="credits" data-i18n-aria="attribution" aria-label="Atribucion del proyecto">
+          <span data-i18n="localGenerator">Generador local</span>
+          <span>By MIMOmakers</span>
+          <img src="assets/license.png" width="447" height="134" data-i18n-alt="license" alt="Creative Commons Attribution-NonCommercial-ShareAlike">
         </footer>
       </aside>
-    </main>
 
-    <script src="app.js"></script>
-  </body>
+    </section>
+  </main>
+</body>
 </html>

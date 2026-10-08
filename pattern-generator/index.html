@@ -1,132 +1,146 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pattern Generator</title>
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body data-theme="dark">
-    <header class="app-header">
-      <div>
-        <p class="eyebrow">Offline pattern studio</p>
-        <h1>Pattern Generator</h1>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pattern Generator</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="shell.js" defer></script>
+  <script src="tool.js" defer></script>
+</head>
+<body data-theme="light">
+  <!-- Shared template header: structure and controls are preserved. -->
+  <header class="app-header">
+    <h1 data-i18n="toolTitle">Pattern Generator</h1>
+    <div class="header-controls">
+      <div class="icon-group" role="group" data-i18n-aria="languageGroup" aria-label="Idioma">
+        <button class="icon-button" type="button" data-language="es" aria-label="Español" title="Español" aria-pressed="true">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="3" width="28" height="18" rx="2"/><path d="M2 8h28M2 16h28"/><path d="M10 10v4c0 2 4 2 4 0v-4zM10 12h4"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-language="en" aria-label="English" title="English" aria-pressed="false">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="3" width="28" height="18" rx="2"/><path d="m3 4 26 16M29 4 3 20M16 3v18M2 12h28"/><path d="M13 3v6H2m28 0H19V3M2 15h11v6m6 0v-6h11"/></svg>
+        </button>
       </div>
+      <span class="control-divider" aria-hidden="true"></span>
+      <div class="icon-group" role="group" data-i18n-aria="themeGroup" aria-label="Tema">
+        <button class="icon-button" type="button" data-theme-choice="light" data-i18n-aria="lightTheme" aria-label="Tema claro" title="Tema claro" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-theme-choice="dark" data-i18n-aria="darkTheme" aria-label="Tema oscuro" title="Tema oscuro" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14A8.7 8.7 0 0 1 10 3.5 8.7 8.7 0 1 0 20.5 14Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <!-- End shared header. -->
 
-      <label class="theme-control">
-        <span>Theme</span>
-        <select id="themeSelect" aria-label="Choose theme">
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-        </select>
-      </label>
-    </header>
-
-    <main class="workspace">
-      <section class="preview-panel" aria-label="Pattern preview">
+  <main class="workspace">
+    <!-- All generator controls and rendering belong to this module. -->
+    <section id="tool-root" class="pattern-workspace" data-i18n-aria="toolTitle" aria-label="Pattern Generator">
+      <section class="preview-panel" data-i18n-aria="preview" aria-label="Pattern preview">
         <div class="canvas-shell">
-          <canvas id="patternCanvas" width="1600" height="1100"></canvas>
+          <canvas data-i18n-aria="canvas" aria-label="Generated pattern" id="patternCanvas" width="1600" height="1100"></canvas>
           <div id="emptyState" class="empty-state">
-            <strong>Drop a reference image</strong>
-            <span>The generated pattern will appear here.</span>
+            <strong data-i18n="drop">Drop a reference image</strong>
+            <span data-i18n="previewHint">The generated pattern will appear here.</span>
             <label class="file-picker">
-              <input id="imageInput" type="file" accept="image/*">
-              <span>Upload image</span>
+              <input data-i18n-aria="upload" aria-label="Upload image" id="imageInput" type="file" accept="image/*">
+              <span data-i18n="upload">Upload image</span>
             </label>
-            <p id="fileName" class="file-name">No image selected</p>
+            <p id="fileName" class="file-name" role="status">No image selected</p>
           </div>
         </div>
+        <p id="errorStatus" class="error-status" role="alert" hidden></p>
       </section>
 
-      <aside class="control-panel" aria-label="Generator controls">
+      <aside class="control-panel" data-i18n-aria="controls" aria-label="Generator controls">
         <details class="control-group" open>
-          <summary>Orientation</summary>
+          <summary data-i18n="orientation">Orientation</summary>
           <label>
-            <span>Rotation <output id="rotationValue">0 deg</output></span>
+            <span><span data-i18n="rotation">Rotation</span> <output id="rotationValue">0 deg</output></span>
             <input id="rotation" type="range" min="-180" max="180" value="0">
           </label>
           <label>
-            <span>Scale <output id="scaleValue">70%</output></span>
+            <span><span data-i18n="scale">Scale</span> <output id="scaleValue">70%</output></span>
             <input id="scale" type="range" min="15" max="220" value="70">
           </label>
           <label>
-            <span>Skew X <output id="skewXValue">0 deg</output></span>
+            <span><span data-i18n="skewX">Skew X</span> <output id="skewXValue">0 deg</output></span>
             <input id="skewX" type="range" min="-45" max="45" value="0">
           </label>
           <label>
-            <span>Skew Y <output id="skewYValue">0 deg</output></span>
+            <span><span data-i18n="skewY">Skew Y</span> <output id="skewYValue">0 deg</output></span>
             <input id="skewY" type="range" min="-45" max="45" value="0">
           </label>
         </details>
 
         <details class="control-group" open>
-          <summary>Pattern</summary>
+          <summary data-i18n="pattern">Pattern</summary>
           <label>
-            <span>Spacing X <output id="gapXValue">190 px</output></span>
+            <span><span data-i18n="gapX">Spacing X</span> <output id="gapXValue">190 px</output></span>
             <input id="gapX" type="range" min="40" max="520" value="190">
           </label>
           <label>
-            <span>Spacing Y <output id="gapYValue">190 px</output></span>
+            <span><span data-i18n="gapY">Spacing Y</span> <output id="gapYValue">190 px</output></span>
             <input id="gapY" type="range" min="40" max="520" value="190">
           </label>
           <label>
-            <span>Row offset <output id="rowOffsetValue">50%</output></span>
+            <span><span data-i18n="rowOffset">Row offset</span> <output id="rowOffsetValue">50%</output></span>
             <input id="rowOffset" type="range" min="-100" max="100" value="50">
           </label>
           <label>
-            <span>Density <output id="densityValue">3</output></span>
+            <span><span data-i18n="density">Density</span> <output id="densityValue">3</output></span>
             <input id="density" type="range" min="1" max="6" value="3">
           </label>
         </details>
 
         <details class="control-group" open>
-          <summary>Color</summary>
+          <summary data-i18n="color">Color</summary>
           <div class="color-row">
             <label>
-              <span>Pattern</span>
+              <span data-i18n="pattern">Pattern</span>
               <input id="patternColor" type="color" value="#2f7dff">
             </label>
             <label>
-              <span>Background</span>
+              <span data-i18n="background">Background</span>
               <input id="backgroundColor" type="color" value="#10131b">
             </label>
           </div>
           <label class="check-row">
             <input id="transparentBg" type="checkbox">
-            <span>Transparent background</span>
+            <span data-i18n="transparent">Transparent background</span>
           </label>
           <label>
-            <span>Opacity <output id="opacityValue">100%</output></span>
+            <span><span data-i18n="opacity">Opacity</span> <output id="opacityValue">100%</output></span>
             <input id="opacity" type="range" min="5" max="100" value="100">
           </label>
         </details>
 
         <details class="control-group" open>
-          <summary>Halo</summary>
+          <summary data-i18n="halo">Halo</summary>
           <label>
-            <span>Size <output id="haloSizeValue">0 px</output></span>
+            <span><span data-i18n="size">Size</span> <output id="haloSizeValue">0 px</output></span>
             <input id="haloSize" type="range" min="0" max="90" value="0">
           </label>
           <label>
-            <span>Softness <output id="haloSoftnessValue">8 px</output></span>
+            <span><span data-i18n="softness">Softness</span> <output id="haloSoftnessValue">8 px</output></span>
             <input id="haloSoftness" type="range" min="0" max="36" value="8">
           </label>
         </details>
 
         <section class="download-row">
-          <button id="downloadPng" type="button">Download PNG</button>
-          <button id="downloadSvg" type="button">Download SVG</button>
-          <button id="clearPreview" class="danger-button" type="button">Clear Preview</button>
+          <button id="downloadPng" type="button" data-i18n="png">Download PNG</button>
+          <button id="downloadSvg" type="button" data-i18n="svg">Download SVG</button>
+          <button id="clearPreview" class="danger-button" type="button" data-i18n="clear">Clear Preview</button>
         </section>
 
-        <footer class="credits" aria-label="Project attribution">
-          <span>U/PEGAXSUS</span>
-          <span>Made with CODEX</span>
-          <img id="licenseImage" src="assets/license.png" alt="Project license">
+        <footer class="credits" data-i18n-aria="attribution" aria-label="Project attribution">
+          <span>Local generator</span>
+          <span>By MIMOmakers</span>
+          <img id="licenseImage" src="assets/license.png" data-i18n-alt="license" alt="Project license">
         </footer>
       </aside>
-    </main>
-
-    <script src="app.js"></script>
-  </body>
+    </section>
+  </main>
+</body>
 </html>

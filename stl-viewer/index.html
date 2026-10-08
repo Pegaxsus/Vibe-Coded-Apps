@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Local STL Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="shell.js" defer></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.166.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.166.1/examples/jsm/"
+      }
+    }
+  </script>
+  <script src="tool.js" defer></script>
+</head>
+<body data-theme="light">
+  <!-- INICIO HEADER COMÚN: reutilizar con styles.css y shell.js -->
+  <header class="app-header">
+    <h1 data-i18n="toolTitle">Local STL Viewer</h1>
+    <div class="header-controls">
+      <div class="icon-group" role="group" data-i18n-aria="languageGroup" aria-label="Idioma">
+        <button class="icon-button" type="button" data-language="es" aria-label="Español" title="Español" aria-pressed="true">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="3" width="28" height="18" rx="2"/><path d="M2 8h28M2 16h28"/><path d="M10 10v4c0 2 4 2 4 0v-4zM10 12h4"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-language="en" aria-label="English" title="English" aria-pressed="false">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="3" width="28" height="18" rx="2"/><path d="m3 4 26 16M29 4 3 20M16 3v18M2 12h28"/><path d="M13 3v6H2m28 0H19V3M2 15h11v6m6 0v-6h11"/></svg>
+        </button>
+      </div>
+      <span class="control-divider" aria-hidden="true"></span>
+      <div class="icon-group" role="group" data-i18n-aria="themeGroup" aria-label="Tema">
+        <button class="icon-button" type="button" data-theme-choice="light" data-i18n-aria="lightTheme" aria-label="Tema claro" title="Tema claro" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-theme-choice="dark" data-i18n-aria="darkTheme" aria-label="Tema oscuro" title="Tema oscuro" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14A8.7 8.7 0 0 1 10 3.5 8.7 8.7 0 1 0 20.5 14Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <!-- FIN HEADER COMÚN -->
+
+  <main class="workspace">
+    <!-- STL tool module: all tool-specific styling is scoped to this root. -->
+    <section id="tool-root" class="tool-module" data-i18n-aria="viewerControls" aria-label="STL viewer controls">
+    <aside class="sidebar" data-i18n-aria="viewerControls" aria-label="Controles del visor STL">
+      <label class="drop-zone" id="drop-zone" for="file-input">
+        <span class="upload-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M12 16V4m0 0 4.5 4.5M12 4 7.5 8.5M5 20h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>
+          <strong data-i18n="dropTitle">Arrastra aqui tu archivo STL</strong>
+          <span data-i18n="dropHint">Tambien puedes seleccionarlo desde tu equipo.</span>
+        </span>
+      </label>
+
+      <input class="file-input" id="file-input" type="file" accept=".stl,model/stl" data-i18n-aria="upload" aria-label="Seleccionar archivo STL">
+
+      <div class="button-row">
+        <label class="file-button" for="file-input">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span data-i18n="upload">Load STL</span>
+        </label>
+        <button class="icon-button" id="reset-view" type="button" title="Centrar vista" data-i18n-aria="center" aria-label="Centrar vista">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 12a9 9 0 1 1 2.64 6.36M3 18v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <section class="controls" data-i18n-aria="previewSettings" aria-label="Ajustes de previsualizacion">
+<label class="toggle">
+          <span data-i18n="rotation">Rotacion automatica</span>
+          <span class="switch">
+            <input id="auto-rotate" type="checkbox" checked data-i18n-aria="rotation" aria-label="Activar rotacion automatica">
+            <span aria-hidden="true"></span>
+          </span>
+        </label>
+
+        <div class="control">
+          <div class="control-line">
+            <span data-i18n="speed">Velocidad</span>
+            <output id="speed-value">50%</output>
+          </div>
+          <input id="speed" data-i18n-aria="speed" aria-label="Speed" type="range" min="0" max="100" value="50">
+        </div>
+
+        <div class="control">
+          <div class="control-line">
+            <span data-i18n="modelColor">Color del modelo</span>
+            <output id="color-value">Gris claro</output>
+          </div>
+          <div class="palette" id="palette" data-i18n-aria="palette" aria-label="Paleta de color del modelo"></div>
+        </div>
+
+        <div class="control">
+          <div class="control-line">
+            <span data-i18n="orientation">Orientacion</span>
+            <output id="axis-value">Libre</output>
+          </div>
+          <div class="axis-grid" data-i18n-aria="axisGroup" aria-label="Orientar modelo por ejes">
+            <button class="axis-button" type="button" data-axis="x" data-sign="1" title="Vista desde X positivo">+X</button>
+            <button class="axis-button" type="button" data-axis="x" data-sign="-1" title="Vista desde X negativo">-X</button>
+            <button class="axis-button" type="button" data-axis="y" data-sign="1" title="Vista desde Y positivo">+Y</button>
+            <button class="axis-button" type="button" data-axis="y" data-sign="-1" title="Vista desde Y negativo">-Y</button>
+            <button class="axis-button" type="button" data-axis="z" data-sign="1" title="Vista desde Z positivo">+Z</button>
+            <button class="axis-button" type="button" data-axis="z" data-sign="-1" title="Vista desde Z negativo">-Z</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats" data-i18n-aria="modelData" aria-label="Datos del modelo">
+        <div class="stat"><span data-i18n="file">Archivo</span><output id="file-name">Sin cargar</output></div>
+        <div class="stat"><span data-i18n="triangles">Triangulos</span><output id="triangles">-</output></div>
+        <div class="stat"><span data-i18n="dimensions">Dimensiones</span><output id="dimensions">-</output></div>
+      </section>
+      <footer class="credits" data-i18n-aria="attribution" aria-label="Project attribution">
+        <span>Local generator</span>
+        <span>By MIMOmakers</span>
+        <img src="assets/license.png" data-i18n-aria="license" aria-label="License: attribution, noncommercial, share alike" alt="CC BY-NC-SA">
+      </footer>
+    </aside>
+
+    <section class="viewer" id="viewer" data-i18n-aria="preview" aria-label="Previsualizacion 3D">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-state-inner">
+          <svg width="94" height="94" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+            <path d="M60 14 98 36v48L60 106 22 84V36L60 14Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M22 36 60 58l38-22M60 58v48" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <p data-i18n="empty">No STL loaded</p>
+        </div>
+      </div>
+      <div class="status" id="status" role="status" aria-live="polite">Esperando archivo STL.</div>
+    </section>
+  
+    </section>
+  </main>
+</body>
+</html>

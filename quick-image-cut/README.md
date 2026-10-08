@@ -34,5 +34,4 @@ The module extends `ToolShell.messages` and listens for `tool:languagechange` to
 
 ## Attribution
 
-U/PEGAXSUS. Made with CODEX. Original license artwork is retained in `assets/license.png`.
-
+Local generator. By MIMOmakers. Original license artwork is retained in `assets/license.png`.

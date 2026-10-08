@@ -1,37 +1,51 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Quick Image Cut</title>
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body data-theme="light">
-    <!-- App header mirrors the compact tool layout used by the sibling generators. -->
-    <header class="app-header">
-      <div>
-        <p class="eyebrow">Offline image cropper</p>
-        <h1>Quick Image Cut</h1>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quick Image Cut</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="shell.js" defer></script>
+  <script src="tool.js" defer></script>
+</head>
+<body data-theme="light">
+  <!-- Shared template header: language and theme controls are managed by shell.js. -->
+  <header class="app-header">
+    <h1 data-i18n="toolTitle">Quick Image Cut</h1>
+    <div class="header-controls">
+      <div class="icon-group" role="group" data-i18n-aria="languageGroup" aria-label="Idioma">
+        <button class="icon-button" type="button" data-language="es" aria-label="Español" title="Español" aria-pressed="true">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="3" width="28" height="18" rx="2"/><path d="M2 8h28M2 16h28"/><path d="M10 10v4c0 2 4 2 4 0v-4zM10 12h4"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-language="en" aria-label="English" title="English" aria-pressed="false">
+          <svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="3" width="28" height="18" rx="2"/><path d="m3 4 26 16M29 4 3 20M16 3v18M2 12h28"/><path d="M13 3v6H2m28 0H19V3M2 15h11v6m6 0v-6h11"/></svg>
+        </button>
       </div>
+      <span class="control-divider" aria-hidden="true"></span>
+      <div class="icon-group" role="group" data-i18n-aria="themeGroup" aria-label="Tema">
+        <button class="icon-button" type="button" data-theme-choice="light" data-i18n-aria="lightTheme" aria-label="Tema claro" title="Tema claro" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>
+        </button>
+        <button class="icon-button" type="button" data-theme-choice="dark" data-i18n-aria="darkTheme" aria-label="Tema oscuro" title="Tema oscuro" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14A8.7 8.7 0 0 1 10 3.5 8.7 8.7 0 1 0 20.5 14Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <!-- End shared header. -->
 
-      <label class="theme-control">
-        <span>Theme</span>
-        <select id="themeSelect" aria-label="Choose theme">
-          <option value="dark">Dark</option>
-          <option value="light" selected>Light</option>
-        </select>
-      </label>
-    </header>
+  <main class="workspace">
+    <!-- Tool module: reusable crop controls and preview; behavior lives in tool.js. -->
+    <section id="tool-root" class="crop-workspace" aria-label="Quick Image Cut">
 
-    <main class="workspace">
       <!-- The preview area owns both the empty upload state and the interactive crop layer. -->
-      <section class="preview-panel" aria-label="Image crop preview">
+      <section class="preview-panel" data-i18n-aria="preview" aria-label="Image crop preview">
         <div id="canvasShell" class="canvas-shell">
-          <div id="imageStage" class="image-stage" aria-label="Loaded image and crop frame">
+          <div id="imageStage" class="image-stage" data-i18n-aria="imageFrame" aria-label="Loaded image and crop frame">
             <img id="previewImage" alt="Uploaded preview">
-            <div id="cropOverlay" class="crop-overlay" role="img" aria-label="Crop area">
+            <div id="cropOverlay" class="crop-overlay" role="img" data-i18n-aria="cropArea" aria-label="Crop area">
               <span class="crop-size" id="cropSizeLabel">800 x 800 px</span>
-              <!-- Resize handles use data-resize directions consumed by app.js pointer logic. -->
+              <!-- Resize handles use data-resize directions consumed by tool.js pointer logic. -->
               <span class="resize-handle resize-nw" data-resize="nw" aria-hidden="true"></span>
               <span class="resize-handle resize-n" data-resize="n" aria-hidden="true"></span>
               <span class="resize-handle resize-ne" data-resize="ne" aria-hidden="true"></span>
@@ -44,11 +58,11 @@
           </div>
 
           <div id="emptyState" class="empty-state">
-            <strong>Drop an image</strong>
-            <span>Select a crop size and move or resize the overlay over the image.</span>
+            <strong data-i18n="dropImage">Drop an image</strong>
+            
             <label class="file-picker">
               <input id="imageInput" type="file" accept="image/*">
-              <span>Upload image</span>
+              <span data-i18n="uploadImage">Upload image</span>
             </label>
             <p id="fileName" class="file-name">No image selected</p>
           </div>
@@ -56,31 +70,31 @@
       </section>
 
       <!-- Controls are grouped with details elements so the panel stays scannable on small screens. -->
-      <aside class="control-panel" aria-label="Crop controls">
+      <aside class="control-panel" data-i18n-aria="cropControls" aria-label="Crop controls">
         <details class="control-group" open>
-          <summary>Image</summary>
+          <summary data-i18n="image">Image</summary>
           <label class="file-picker side-picker">
             <input id="sideImageInput" type="file" accept="image/*">
-            <span>Upload image</span>
+            <span data-i18n="uploadImage">Upload image</span>
           </label>
           <p id="sideFileName" class="file-name">No image selected</p>
         </details>
 
         <details class="control-group" open>
-          <summary>Crop size</summary>
+          <summary data-i18n="cropSize">Crop size</summary>
           <label class="check-row">
             <input id="squareMode" type="checkbox" checked>
-            <span>Square</span>
+            <span data-i18n="square">Square</span>
           </label>
           <label>
-            <span>Width <output id="cropWidthValue">800 px</output></span>
+            <span><span data-i18n="width">Width</span> <output id="cropWidthValue">800 px</output></span>
             <input id="cropWidth" type="number" min="1" max="20000" value="800" inputmode="numeric">
           </label>
           <label>
-            <span>Height <output id="cropHeightValue">800 px</output></span>
+            <span><span data-i18n="height">Height</span> <output id="cropHeightValue">800 px</output></span>
             <input id="cropHeight" type="number" min="1" max="20000" value="800" inputmode="numeric">
           </label>
-          <div class="preset-row" aria-label="Crop size presets">
+          <div class="preset-row" data-i18n-aria="presets" aria-label="Crop size presets">
             <button type="button" data-preset="512,512">512</button>
             <button type="button" data-preset="1080,1080">1080</button>
             <button type="button" data-preset="1200,630">1200 x 630</button>
@@ -88,7 +102,7 @@
         </details>
 
         <details class="control-group" open>
-          <summary>Position</summary>
+          <summary data-i18n="position">Position</summary>
           <label>
             <span>X <output id="cropXValue">0 px</output></span>
             <input id="cropX" type="range" min="0" max="0" value="0">
@@ -101,8 +115,8 @@
 
         <section class="download-row">
           <button id="downloadCrop" type="button">Cut &amp; Download</button>
-          <button id="centerCrop" type="button">Center</button>
-          <button id="clearPreview" class="danger-button" type="button">Clear Preview</button>
+          <button id="centerCrop" type="button" data-i18n="center">Center</button>
+          <button id="clearPreview" class="danger-button" type="button" data-i18n="clear">Clear Preview</button>
         </section>
 
         <!-- Attribution asset is copied from pattern-generator for brand/license consistency. -->
@@ -112,8 +126,9 @@
           <img id="licenseImage" src="assets/license.png" alt="Project license">
         </footer>
       </aside>
-    </main>
-
-    <script src="app.js"></script>
-  </body>
+    
+    </section>
+    <!-- End tool module. -->
+  </main>
+</body>
 </html>

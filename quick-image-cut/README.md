@@ -1,36 +1,38 @@
 # Quick Image Cut
 
-Quick Image Cut is a self-contained browser tool for cropping images locally. It runs from plain HTML, CSS, and JavaScript, so no server, build step, or external dependency is required.
+An offline image cropper built on the shared `00-template-tools` shell. Open `index.html` directly in a modern browser. No installation, build step, server, or external services are required.
 
 ## Features
 
-- Upload images through the file picker or drag and drop.
-- Set the crop size in exact pixels.
-- Move the crop overlay with the mouse or pointer.
-- Resize the overlay from any side or corner.
-- Enable Square mode to keep width and height synced.
-- Keep the current overlay position and size when another image is loaded during the same page session.
-- Export the crop using the original filename.
-- Switch between light and dark themes.
+- Upload an image using either file picker or drag and drop.
+- Set crop width and height in original image pixels.
+- Enable Square to keep both dimensions equal.
+- Drag the overlay to position the crop, or resize it using its eight handles.
+- Adjust X and Y with sliders, choose a size preset, or center the selection.
+- Use **Cut & Download** to download the crop with the original filename.
+- Replace an image to reuse the current crop size and position during the page session. Coordinates are clamped to the new image bounds.
+- Switch between English and Spanish, and light and dark themes using the shared header. English and light are the defaults; subsequent visits restore saved preferences when browser storage is available.
 
-## How to Use
+## Files
 
-1. Open `index.html` in a browser.
-2. Upload or drop an image into the preview area.
-3. Choose the crop width and height, or keep Square mode enabled for matching sides.
-4. Drag the overlay to position the crop.
-5. Drag an overlay handle to resize it.
-6. Click `Cut & Download` to save the cropped image.
-
-## Project Structure
-
-- `index.html` contains the app layout, controls, preview area, resize handles, and attribution footer.
-- `styles.css` defines the shared tool theme, responsive layout, crop overlay, drag states, and resize handles.
-- `app.js` handles image loading, crop coordinate mapping, drag and resize behavior, and file export.
-- `assets/license.png` stores the attribution/license graphic copied from the companion tool style.
+- `index.html`: shared header and the crop module inside `#tool-root`.
+- `styles.css`: template theme tokens, header styles, and scoped responsive crop styles.
+- `shell.js`: language and theme preferences, translations, and shell events.
+- `tool.js`: image loading, crop geometry, pointer interactions, and canvas export.
+- `assets/license.png`: original attribution artwork.
+- `old_version/`: complete original application preserved before migration, including its README and assets. Open `old_version/index.html` to use it.
 
 ## Implementation Notes
 
-The crop rectangle is stored in natural image pixels, not screen pixels. The preview image is scaled to fit the available panel, and `app.js` converts between preview coordinates and original image coordinates through `displayScale`. This keeps the downloaded crop aligned with the visible overlay.
+All image processing happens locally in the browser. Images are decoded through object URLs; a canvas draws the selected rectangle at its original pixel resolution. The preview is scaled to fit without changing export dimensions.
 
-The app only stores state in memory. Refreshing the page resets the loaded image and overlay, while loading another image without refreshing preserves the current crop rectangle as much as the new image dimensions allow.
+Crop state lives only in memory and resets on page reload. Theme and language use the tool-specific `quick-image-cut-theme` and `quick-image-cut-language` storage keys.
+
+PNG, JPEG, and WebP images are exported using their matching canvas formats. Other browser-readable formats use PNG data while retaining the original filename; the extension may therefore differ from the encoded format. Browser decoding and canvas limits determine supported input formats and maximum image size. Metadata and animation are not preserved.
+
+The module extends `ToolShell.messages` and listens for `tool:languagechange` to refresh dynamic status text. The **Cut & Download** label remains in English in both languages.
+
+## Attribution
+
+U/PEGAXSUS. Made with CODEX. Original license artwork is retained in `assets/license.png`.
+

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Calcula y compara hashes de archivos localmente, sin subirlos a ningún servidor.">
+  <title>Hash Check</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="dark">
+  <header class="app-header">
+    <div><p class="eyebrow">Verificación local de archivos</p><h1>Hash Check<span class="title-dot">.</span></h1></div>
+    <label class="theme-control"><span>Tema</span><select id="themeSelect" aria-label="Elegir tema"><option value="dark">Oscuro</option><option value="light">Claro</option></select></label>
+  </header>
+  <main class="workspace">
+    <aside class="control-panel" aria-label="Opciones de comprobación">
+      <details class="control-group" open>
+        <summary>Algoritmo</summary>
+        <label><span>Sistema de hash</span><select id="algorithm"><option value="SHA-256">SHA-256</option><option value="SHA-384">SHA-384</option><option value="SHA-512">SHA-512</option></select></label>
+        <p class="help">SHA-256 es una buena opción para comprobar la integridad de tus archivos.</p>
+        <p class="help">Al cambiar el algoritmo, se recalculan ambos archivos.</p>
+      </details>
+      <details class="control-group" open>
+        <summary>Archivos</summary>
+        <div class="action-stack"><button id="clearA" class="secondary" disabled>Limpiar archivo A</button><button id="clearB" class="secondary" disabled>Limpiar archivo B</button><button id="clearAll" class="danger-button" disabled>Limpiar ambos</button></div>
+      </details>
+      <details class="control-group" open>
+        <summary>Informe</summary>
+        <label><span>Formato de exportación</span><select id="reportFormat"><option value="html">HTML · imprimible / PDF</option><option value="txt">Texto · TXT</option><option value="json">Datos · JSON</option></select></label>
+        <button id="exportReport" disabled>Exportar comprobación</button>
+        <p class="help">Incluye resultado, algoritmo, hashes, metadatos y fecha. Abre el HTML para imprimirlo o guardarlo como PDF.</p>
+      </details>
+      <footer class="credits"><span class="privacy-dot">100 % local y privado</span><span>Sin subidas ni servicios externos</span></footer>
+    </aside>
+    <section class="preview-panel" aria-label="Comparador de archivos">
+      <div class="panel-heading"><div><h2>Arrastra tus archivos para comparar su contenido.</h2></div><span class="algorithm-badge" id="algorithmBadge">SHA-256</span></div>
+      <div class="file-grid" id="fileGrid"></div>
+      <section id="comparison" class="comparison" aria-live="polite" hidden></section>
+      <div id="guide" class="guide"><span class="guide-symbol">=</span><div><strong>¿Son el mismo fichero?</strong><p>Carga un archivo en cada espacio. La comparación aparecerá aquí cuando estén listos.</p></div></div>
+      <p id="notice" class="notice" role="status"></p>
+      <p class="footnote">Compara el contenido, hasta 256 MiB por archivo.</p>
+    </section>
+  </main>
+  <script src="core.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
